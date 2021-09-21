@@ -51,7 +51,7 @@ export default createEndpoint({
 
     if (!user) throw new NotFound("User cannot be found with this username");
 
-    if (!bcrypt.compareSync(password, user.password as string))
+    if (!(await bcrypt.compare(password, user.password as string)))
       throw new DisplayedError(400, "Passwords do not match");
 
     const { password: _, ...rest } = user;
