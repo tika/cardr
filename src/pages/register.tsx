@@ -1,48 +1,75 @@
-   
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/dist/client/router";
 import { fetcher } from "@app/fetcher";
 import { JWT } from "@app/jwt";
 import { useState } from "react";
+import { registerSchema } from "@schemas/users";
+import toast from "react-hot-toast";
 
-export default function Login() {
-    const router = useRouter();
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-  
-    function register() {
-        if (password !== confirmPassword) return alert("Not confirm");
-        fetcher("POST", "/users", { name: username, password }).then(() => router.push("/"))
+export default function Register() {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  function register() {
+    const body = registerSchema.safeParse({ name: username, password });
+    
+    if ("error" in body) {
+      return toast.error(body.error.name);
+    } else {
+      if (password !== confirmPassword) return toast.error("Passwords don't match");
+      fetcher("PUT", "/users", { name: username, password }).then(() =>
+        router.push("/")
+      );
     }
 
-    return (
-      <div
-        className={`min-h-screen mx-auto flex flex-col justify-center transition duration-200 items-center`}>
-        <h1 className="font-black text-6xl dark:text-white mb-8">Login</h1>
-        <form onSubmit={(e) => {
-            e.preventDefault();
-            register();}}>
-            <input placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            <input type="password" placeholder="Confirm Password" value={password} onChange={(e) => setConfirmPassword(e.target.value)} />
-            <button>Login</button>
-        </form>
-      </div>
-    );
+    
   }
 
+  return (
+    <div>
+      <h1>Register</h1>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          register();
+        }}
+      >
+        <input
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+        <button>Register</button>
+      </form>
+    </div>
+  );
+}
+
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-    const user = JWT.parseRequest(ctx.req);
-  
-    if (user) {
-      return {
-        redirect: {
-          destination: "/",
-          permanent: false,
-        },
-      };
-    }
-  
-    return { props: {} };
-  };
+  const user = JWT.parseRequest(ctx.req);
+
+  if (user) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return { props: {} };
+};
