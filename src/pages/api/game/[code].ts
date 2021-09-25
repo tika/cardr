@@ -1,4 +1,6 @@
 import { createEndpoint } from "@app/endpoint";
+import { NotFound } from "@app/expections";
+import { JWT } from "@app/jwt";
 import { Player } from "@app/santise";
 import { Card, Game } from "src/pages/[code]";
 
@@ -8,6 +10,22 @@ export default createEndpoint({
     GET: async (req, res) => {
         const code = req.query.code;
         res.send({ game: games.filter(g => g.code === code)[0] });
+    },
+    POST: async (req, res) => {
+        const code = req.query.code;
+        const user = JWT.parseRequest(req);
+
+        if (!user) throw new NotFound("user");
+
+        // Check if the user requesting is in the game
+        const game = getPlayersGame(user.id);
+        
+        // todo: update error code
+        if (!game || game.code !== code) throw new NotFound("game");
+
+        // since we know this player is actually in the game
+        // now we can remove 1 from the deck, update that in the game, and send out a pusher req
+        
     },
 });
 

@@ -25,16 +25,11 @@ export interface Game {
 
 export default function Game(props: GameProps) {
   const [game, setGame] = useState<Game | undefined>();
-  
-  // todo: find a way to update the game whenever it is updated
-  // -> send a request when the game loads
 
   // Once a player joins the game, create a socket stating who we are
-  function sendReq() {
-    fetcher("POST", "/pusher", { player: props.user, code: props.code });
-  }
-
-  useEffect(() => sendReq(), []);
+  useEffect(() => {
+    fetcher("POST", "/pusher", { player: props.user, code: props.code })
+  }, []);
 
   useEffect(() => {
     const pusher = new Pusher(process.env.NEXT_PUBLIC_KEY as string, {
@@ -52,16 +47,23 @@ export default function Game(props: GameProps) {
     return () => pusher.unsubscribe(props.code);
   }, []);
 
+  function takeFromDeck() {
+    // this is bad usage of a rest API but we will just use it to get the next move
+    // -> make sure this user is in the game tho
+    fetcher("POST", `/game/${props.code}`);
+  }
+
   return (
     <div>
       {!game ? <div>
         <h1>Waiting for players... 1/2</h1>
         <h2>Code: {props.code}</h2>
-        </div> 
+        </div>
       :
         <div>
           <h1>Game: {game.code}</h1>
           <h2>Players: {game.players.join(", ")}</h2>
+          <button onClick={takeFromDeck}>Take from deck</button>
         </div>
       }
     </div>
