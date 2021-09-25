@@ -2,7 +2,20 @@ import { createEndpoint } from "@app/endpoint";
 import { NotFound } from "@app/expections";
 import { JWT } from "@app/jwt";
 import { Player } from "@app/santise";
+import Pusher from "pusher";
 import { Card, Game } from "src/pages/[code]";
+
+export async function sendUpdate(code: string) {
+    await pusher.trigger(code, "game-update", getGame(code));
+}
+
+export const pusher = new Pusher({
+    appId: process.env.APP_ID as string,
+    key: process.env.KEY as string,
+    secret: process.env.SECRET as string,
+    cluster: process.env.CLUSTER as string,
+    useTLS: true,
+});
 
 let games: Game[] = [];
 
@@ -10,6 +23,26 @@ export default createEndpoint({
     GET: async (req, res) => {
         const code = req.query.code;
         res.send({ game: games.filter(g => g.code === code)[0] });
+    },
+    PUT: async (req, res) => { // Handles joining
+        const code = req.query.code as string;
+        const { player } = req.body as { player: Player };
+        
+        // if there is already a game with this code && player is not already in this game
+        if (isGame(code)) {
+            if (getPlayersGame(player.id) && getPlayersGame(player.id).code === code) {
+                console.log(`${player.name} is already in ${code}`)
+            } else {
+                addPlayer(code, player);
+                sendUpdate(code);
+                
+                console.log(`adding ${player.name} to ${code}! There are now ${getGame(code)?.players}`)
+            }
+        } else {
+            createGame(code, player);
+        }
+        
+        res.send({ joined: true })
     },
     POST: async (req, res) => {
         const code = req.query.code;

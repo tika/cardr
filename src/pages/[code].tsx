@@ -28,7 +28,7 @@ export default function Game(props: GameProps) {
 
   // Once a player joins the game, create a socket stating who we are
   useEffect(() => {
-    fetcher("POST", "/pusher", { player: props.user, code: props.code })
+    fetcher("PUT", `/game/${props.code}`, { player: props.user })
   }, []);
 
   useEffect(() => {
