@@ -1,6 +1,6 @@
 import { createEndpoint } from "@app/endpoint";
 import { Player } from "@app/santise";
-import { Game } from "src/pages/[code]";
+import { Card, Game } from "src/pages/[code]";
 
 let games: Game[] = [];
 
@@ -22,12 +22,31 @@ export function addPlayer(code: string, player: Player): void {
     game.players.push(player);
 }
 
+function generateShuffleCards() {
+  const cards: Card[] = [];
+  
+  // Generate cards
+  for (let c of ["red", "black", "yellow"])
+      for (let n = 1; n <= 10; n++)
+        cards.push({ color: c as Card["color"], number: n as Card["number"] })
+
+  // Shuffle cards
+  for (let i = 0; i < cards.length; i++) {
+    const random = Math.floor(Math.random() * 29);
+    cards[random] = cards[i];
+    cards[i] = cards[random];
+  }
+
+  return cards;
+}
+
 export function createGame(code: string, initialPlayer: Player): void {
     if (isGame(code)) return;
+    
     games.push({
         code,
         players: [initialPlayer],
-        cards: []
+        cards: generateShuffleCards()
     });
 }
 

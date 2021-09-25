@@ -12,7 +12,7 @@ type GameProps = {
   code: string;
 };
 
-interface Card {
+export interface Card {
   color: "red" | "black" | "yellow";
   number: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 }
@@ -24,7 +24,7 @@ export interface Game {
 };
 
 export default function Game(props: GameProps) {
-  const [game, setGame] = useState<Game>(props.game);
+  const [game, setGame] = useState<Game | undefined>();
   
   // todo: find a way to update the game whenever it is updated
   // -> send a request when the game loads
@@ -44,8 +44,9 @@ export default function Game(props: GameProps) {
     // We are only sending pusher reqs to our game
     const channel = pusher.subscribe(props.code); 
 
-    channel.bind("game-update", (data: { player: Player, code: string }) => {
-      console.log(data + " w");
+    channel.bind("game-update", (data: Game) => {
+      console.log(data);
+      setGame(data);
     });
 
     return () => pusher.unsubscribe(props.code);
@@ -53,13 +54,14 @@ export default function Game(props: GameProps) {
 
   return (
     <div>
-      {game?.players.length < 2 ? <div>
-        <h1>Waiting for players... {game?.players.length}/2</h1>
+      {!game ? <div>
+        <h1>Waiting for players... 1/2</h1>
         <h2>Code: {props.code}</h2>
         </div> 
       :
         <div>
-          <h1>hello</h1>
+          <h1>Game: {game.code}</h1>
+          <h2>Players: {game.players.join(", ")}</h2>
         </div>
       }
     </div>
