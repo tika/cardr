@@ -16,4 +16,13 @@ model User {
   password    String
   timesWon    Int     @default(0)
   timesPlayed Int     @default(0)
+
+  // game    Game[] @relation("UserPlaysGame")
+  // cards   String
 }
+
+// model Game {
+//   code        String  @id @default(cuid()) // todo: have this shorter?
+//   users       User[]  @relation("UserPlaysGame", references: [id])
+//   cards       String // What cards have already been distributed, to which players?
+// }

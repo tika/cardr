@@ -1,5 +1,7 @@
+import { Player } from "@app/santise";
 import { NextApiRequest, NextApiResponse } from "next";
 import Pusher from "pusher";
+import { addPlayer, createGame, getGame, isGame } from "../game/[code]";
 
 export const pusher = new Pusher({
   appId: process.env.APP_ID as string,
@@ -13,11 +15,17 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { test, token } = req.body;
-  const response = await pusher.trigger("chat", "chat-event", {
-    test,
-    token
-  });
+  const { player, code } = req.body as { player: Player, code: string };
 
-  res.json({ message: "completed" });
+  console.log(`${player.name} joined ${code}`);
+
+  // if there is already a game with this code
+  if (isGame(code)) {
+    addPlayer(code, player);
+    const response = await pusher.trigger("game", "start-event", getGame(code));
+  }
+
+  createGame(code, player);
+
+  res.json({ game: code });
 }

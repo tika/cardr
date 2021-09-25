@@ -1,12 +1,16 @@
+import { fetcher } from "@app/fetcher";
 import { JWT, JWTPayload } from "@app/jwt";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/dist/client/router";
+import { useEffect, useState } from "react";
 
 type LandingProps = {
   user: JWTPayload | null;
 };
 
 export default function Landing(props: LandingProps) {
+  const [joinCode, setJoinCode] = useState("");
+  
   const router = useRouter();
 
   return (
@@ -15,8 +19,19 @@ export default function Landing(props: LandingProps) {
       <h2>A simple card game</h2>
       {props.user ? (
         <div>
-          <button>Find game</button>
-          <input placeholder="Join code" />
+          <button onClick={() => fetcher("GET", "/game/start").then((d: any) => router.push(`/${d.code}`))}>Find game</button>
+          <input placeholder="Join code" value={joinCode} onChange={(e) => setJoinCode(e.target.value)} />
+          <button onClick={() => {
+            if (!joinCode) return;
+            fetcher("GET", `/game/${joinCode}`)
+              .then((v: any) => {
+                if (Object.keys(v).length < 1) {
+                  setJoinCode("");
+                  return alert("Invalid game");
+                }
+                router.push(`/${joinCode}`);
+            });
+          }}>Join requested</button>
         </div>
       ) : (
         <div>
