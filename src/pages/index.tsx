@@ -23,6 +23,7 @@ export default function Landing(props: LandingProps) {
           <input placeholder="Join code" value={joinCode} onChange={(e) => setJoinCode(e.target.value)} />
           <button onClick={() => {
             if (!joinCode) return;
+            console.log(joinCode);
             fetcher("GET", `/game/${joinCode}`)
               .then((v: any) => {
                 if (Object.keys(v).length < 1) {

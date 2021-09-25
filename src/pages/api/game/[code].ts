@@ -35,7 +35,11 @@ export function deleteGame(code: string) {
     games = games.filter(g => g.code !== code);
 }
 
+export function getPlayersGame(player: string) {
+    return games.filter(g => g.players.filter(p => p.id === player).length > 0)[0];
+}
+
 export function getGame(code: string): Game | null {
-    if (isGame(code)) return null;
+    if (!isGame(code)) return null;
     return games.filter(g => g.code === code)[0];
 }

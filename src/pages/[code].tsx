@@ -3,7 +3,6 @@ import { JWT } from "@app/jwt";
 import { Player } from "@app/santise";
 import { GetServerSideProps } from "next";
 import Pusher from "pusher-js";
-import useSWR from 'swr';
 import { useEffect, useState } from "react";
 
 type GameProps = {
@@ -42,14 +41,14 @@ export default function Game(props: GameProps) {
       cluster: "eu",
     });
 
-    const channel = pusher.subscribe("game");
+    // We are only sending pusher reqs to our game
+    const channel = pusher.subscribe(props.code); 
 
-    channel.bind("join-event", function (data: { player: Player, code: string }) {
-      // fetcher("GET", `/game/${props.code}`);
-      console.log(data);
+    channel.bind("game-update", (data: { player: Player, code: string }) => {
+      console.log(data + " w");
     });
 
-    return () => pusher.unsubscribe("game");
+    return () => pusher.unsubscribe(props.code);
   }, []);
 
   return (
