@@ -30,19 +30,24 @@ export default createEndpoint({
         
         // if there is already a game with this code && player is not already in this game
         if (isGame(code)) {
+            if (getGame(code)!.players.length >= 2) {
+                return res.json({ status: "full-game" });
+            }
+
             if (getPlayersGame(player.id) && getPlayersGame(player.id).code === code) {
-                console.log(`${player.name} is already in ${code}`)
+                // console.log(`${player.name} is already in ${code}`)
+                return res.json({ status: "already-in-game" });
             } else {
                 addPlayer(code, player);
                 sendUpdate(code);
                 
-                console.log(`adding ${player.name} to ${code}! There are now ${getGame(code)?.players}`)
+                return res.json({ status: "joined-game" });
+                // console.log(`adding ${player.name} to ${code}! There are now ${getGame(code)?.players}`)
             }
-        } else {
-            createGame(code, player);
         }
-        
-        res.send({ joined: true })
+
+        createGame(code, player);
+        return res.json({ status: "joined-new-game" });
     },
     POST: async (req, res) => {
         const code = req.query.code;
@@ -58,7 +63,7 @@ export default createEndpoint({
 
         // since we know this player is actually in the game
         // now we can remove 1 from the deck, update that in the game, and send out a pusher req
-        
+        console.log("remove 1 from deck");
     },
 });
 
@@ -97,7 +102,8 @@ export function createGame(code: string, initialPlayer: Player): void {
     games.push({
         code,
         players: [initialPlayer],
-        cards: generateShuffleCards()
+        cards: generateShuffleCards(),
+        turn: 0
     });
 }
 

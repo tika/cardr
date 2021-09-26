@@ -2,7 +2,8 @@ import { fetcher } from "@app/fetcher";
 import { JWT, JWTPayload } from "@app/jwt";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/dist/client/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 type LandingProps = {
   user: JWTPayload | null;
@@ -26,11 +27,10 @@ export default function Landing(props: LandingProps) {
             console.log(joinCode);
             fetcher("GET", `/game/${joinCode}`)
               .then((v: any) => {
-                if (Object.keys(v).length < 1) {
+                if (Object.keys(v).length === 0) {
                   setJoinCode("");
-                  return alert("Invalid game");
-                }
-                router.push(`/${joinCode}`);
+                  toast.error("Invalid game code");
+                } else router.push(`/${joinCode}`);
             });
           }}>Join requested</button>
         </div>

@@ -4,6 +4,7 @@ import { Player } from "@app/santise";
 import { GetServerSideProps } from "next";
 import Pusher from "pusher-js";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 type GameProps = {
   user: Player;
@@ -21,14 +22,17 @@ export interface Game {
   code: string;
   players: Player[];
   cards: Card[];
+  turn: 0 | 1;
 };
 
 export default function Game(props: GameProps) {
   const [game, setGame] = useState<Game | undefined>();
+  const [turn, setTurn] = useState<0 | 1>(0);
 
   // Once a player joins the game, create a socket stating who we are
   useEffect(() => {
     fetcher("PUT", `/game/${props.code}`, { player: props.user })
+      .then((res: any) => toast(res.status)); // res.status === what the error/success code is
   }, []);
 
   useEffect(() => {
@@ -62,8 +66,8 @@ export default function Game(props: GameProps) {
       :
         <div>
           <h1>Game: {game.code}</h1>
-          <h2>Players: {game.players.join(", ")}</h2>
-          <button onClick={takeFromDeck}>Take from deck</button>
+          <h2>Players: {game.players.map(p => p.name).join(", ")}</h2>
+          <button onClick={takeFromDeck}>Take from deck</button> {/* todo: have this disabled when it is not our turn*/}
         </div>
       }
     </div>
