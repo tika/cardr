@@ -35,19 +35,17 @@ export default createEndpoint({
             }
 
             if (getPlayersGame(player.id) && getPlayersGame(player.id).code === code) {
-                // console.log(`${player.name} is already in ${code}`)
                 return res.json({ status: "already-in-game" });
             } else {
                 addPlayer(code, player);
                 sendUpdate(code);
                 
-                return res.json({ status: "joined-game" });
-                // console.log(`adding ${player.name} to ${code}! There are now ${getGame(code)?.players}`)
+                return res.json({ status: "joined-game", turn: false, game: getGame(code) });
             }
         }
 
         createGame(code, player);
-        return res.json({ status: "joined-new-game" });
+        return res.json({ status: "joined-new-game", turn: true, game: getGame(code) });
     },
     POST: async (req, res) => {
         const code = req.query.code;
@@ -102,7 +100,11 @@ export function createGame(code: string, initialPlayer: Player): void {
     games.push({
         code,
         players: [initialPlayer],
-        cards: generateShuffleCards(),
+        deck: generateShuffleCards(),
+        cards0: [],
+        cards1: [],
+        hand0: null,
+        hand1: null,
         turn: 0
     });
 }
