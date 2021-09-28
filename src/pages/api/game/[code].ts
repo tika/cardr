@@ -61,9 +61,59 @@ export default createEndpoint({
 
         // since we know this player is actually in the game
         // now we can remove 1 from the deck, update that in the game, and send out a pusher req
-        console.log("remove 1 from deck");
+
+        if (game.deck.length <= 0) {
+            res.send({ ended: true });
+            return;
+        }
+
+        // remove top 1 from deck
+        const card = game.deck.pop() as Card;
+
+        // if we are tryna compare them
+        if (game.hand1 && game.hand0) {
+            
+            // work out who wins
+            if ((game.hand1.color === game.hand0.color && game.hand1.number > game.hand0.number)
+                || doesUserWin([game.hand1, game.hand0], 0)) {
+                // user 1 wins
+                game.cards1.push(game.hand0, game.hand1);
+            } else { // user 0 wins
+                game.cards0.push(game.hand0, game.hand1);
+            }
+
+            // reset
+            game.hand0 = null;
+            game.hand1 = null;
+        } else {
+            // they are user 0
+            if (game.players[0].id === user.id) game.hand0 = card;
+            else game.hand1 = card;
+        }
+
+        game.turn = game.turn === 0 ? 1 : 0;
+
+        // now we just need to send out an "update req"
+        sendUpdate(code);
+
+        res.send({ game });
     },
 });
+
+function doesUserWin(compare: Card[], user: 0 | 1) {
+    const other = user === 0 ? 1 : 0;
+
+    if (compare[user].color === "red" && compare[other].color === "black")
+        return true;
+
+    if (compare[user].color === "yellow" && compare[other].color === "red")
+        return true;
+
+    if (compare[user].color === "black" && compare[other].color === "yellow")
+        return true;
+
+    return false;
+}
 
 export function isGame(code: string): boolean {
     return games.filter(g => g.code === code).length > 0;
