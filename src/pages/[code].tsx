@@ -31,7 +31,8 @@ export interface Game {
 
 export default function Game(props: GameProps) {
   const [game, setGame] = useState<Game | undefined>();
-  const [isTurn, setIsTurn] = useState<boolean>(false);
+  // const [isTurn, setIsTurn] = useState<boolean>(false);
+  const [me, setMe] = useState<0 | 1>(0);
 
   // Once a player joins the game, create a socket stating who we are
   useEffect(() => {
@@ -39,7 +40,10 @@ export default function Game(props: GameProps) {
       .then((res: any) => {
         toast(res.status); // res.status === what the error/success code is
         if (res.status.includes("joined")) {
-          setIsTurn(res.turn); // the first player to join == true
+          console.log(res.turn);
+          console.log(res.turn ? 0 : 1);
+
+          setMe(res.turn ? 0 : 1);
 
           if (!res.turn) {
             // we know there is another player and therefore we can just set the game
@@ -60,6 +64,7 @@ export default function Game(props: GameProps) {
     channel.bind("game-update", (data: Game) => {
       console.log(data);
       setGame(data);
+      // setIsTurn(data.turn === me ? true : false);
     });
 
     return () => pusher.unsubscribe(props.code);
@@ -81,7 +86,7 @@ export default function Game(props: GameProps) {
         <div>
           <h1>Game: {game.code}</h1>
           <h2>Players: {game.players.map(p => p.name).join(", ")}</h2>
-          <button onClick={takeFromDeck} disabled={!isTurn}>Take from deck</button> {/* todo: have this disabled when it is not our turn*/}
+          <button onClick={takeFromDeck} disabled={game.turn !== me}>Take from deck</button> {/* todo: have this disabled when it is not our turn*/}
         </div>
       }
     </div>

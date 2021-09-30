@@ -95,7 +95,7 @@ export default createEndpoint({
 
         // now we just need to send out an "update req"
         sendUpdate(code);
-
+        
         res.send({ game });
     },
 });
