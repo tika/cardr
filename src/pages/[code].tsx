@@ -83,11 +83,17 @@ export default function Game(props: GameProps) {
         <h2>Code: {props.code}</h2>
         </div>
       :
-        <div>
+        <>
+        {game.deck.length === 0 ? <div>
+          <h1>{game.cards0.length > game.cards1.length ? game.players[0].name : game.players[1].name} won!</h1>
+          <h2>{game.cards0.length} cards :: {game.players[0].name}</h2>
+          <h2>{game.cards1.length} cards :: {game.players[1].name}</h2>
+        </div>: <div>
           <h1>Game: {game.code}</h1>
           <h2>Players: {game.players.map(p => p.name).join(", ")}</h2>
           <button onClick={takeFromDeck} disabled={game.turn !== me}>Take from deck</button> {/* todo: have this disabled when it is not our turn*/}
-        </div>
+        </div>}
+        </>
       }
     </div>
   );
