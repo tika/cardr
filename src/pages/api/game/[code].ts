@@ -70,6 +70,10 @@ export default createEndpoint({
         // remove top 1 from deck
         const card = game.deck.pop() as Card;
 
+        if (game.players[0].id === user.id) {
+            game.hand0 = card;
+        } else game.hand1 = card;
+
         // if we are tryna compare them
         if (game.hand1 && game.hand0) {
             
@@ -85,10 +89,6 @@ export default createEndpoint({
             // reset
             game.hand0 = null;
             game.hand1 = null;
-        } else {
-            // they are user 0
-            if (game.players[0].id === user.id) game.hand0 = card;
-            else game.hand1 = card;
         }
 
         game.turn = game.turn === 0 ? 1 : 0;
