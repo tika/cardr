@@ -5,6 +5,7 @@ import { JWT } from "@app/jwt";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { loginSchema } from "@schemas/users";
+import styles from "./styles.module.css";
 
 export default function Login() {
   const router = useRouter();
@@ -24,9 +25,10 @@ export default function Login() {
   }
 
   return (
-    <div>
-      <h1>Login</h1>
+    <div className={styles.bg}>
+      <h1 className={styles.heading}>Login</h1>
       <form
+        className={styles.form}
         onSubmit={async (e) => {
           e.preventDefault();
           submit()
@@ -43,7 +45,7 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button>Login</button>
+        <button style={{ width: "7em" }} className={styles.login}>Login</button>
       </form>
     </div>
   );

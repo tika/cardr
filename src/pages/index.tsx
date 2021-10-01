@@ -4,6 +4,7 @@ import { GetServerSideProps } from "next";
 import { useRouter } from "next/dist/client/router";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import styles from "./styles.module.css";
 
 type LandingProps = {
   user: JWTPayload | null;
@@ -15,29 +16,31 @@ export default function Landing(props: LandingProps) {
   const router = useRouter();
 
   return (
-    <div>
-      <h1>cardr</h1>
-      <h2>A simple card game</h2>
+    <div className={styles.bg}>
+      <h1 className={styles.heading}>cardr</h1>
+      <h2 className={styles.subheading}>the least interactive game</h2>
       {props.user ? (
-        <div>
-          <button onClick={() => fetcher("GET", "/game/start").then((d: any) => router.push(`/${d.code}`))}>Find game</button>
-          <input placeholder="Join code" value={joinCode} onChange={(e) => setJoinCode(e.target.value)} />
-          <button onClick={() => {
-            if (!joinCode) return;
-            console.log(joinCode);
-            fetcher("GET", `/game/${joinCode}`)
-              .then((v: any) => {
-                if (Object.keys(v).length === 0) {
-                  setJoinCode("");
-                  toast.error("Invalid game code");
-                } else router.push(`/${joinCode}`);
-            });
-          }}>Join requested</button>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1em", marginTop: "3em", width: "25em" }}>
+          <button className={styles.login} onClick={() => fetcher("GET", "/game/start").then((d: any) => router.push(`/${d.code}`))}>Find game</button>
+          <div style={{ display: "flex", gap: "1em" }}>
+            <input style={{ width: "100%" }} className={styles.input} placeholder="join code" value={joinCode} onChange={(e) => setJoinCode(e.target.value)} />
+            <button style={{ width: "10em" }} className={styles.register} onClick={() => {
+              if (!joinCode) return;
+              console.log(joinCode);
+              fetcher("GET", `/game/${joinCode}`)
+                .then((v: any) => {
+                  if (Object.keys(v).length === 0) {
+                    setJoinCode("");
+                    toast.error("Invalid game code");
+                  } else router.push(`/${joinCode}`);
+              });
+            }}>Join game</button>
+          </div>
         </div>
       ) : (
-        <div>
-          <button onClick={() => router.push("/login")}>Login</button>
-          <button onClick={() => router.push("/register")}>Register</button>
+        <div className={styles.buttons}>
+          <button className={styles.login} onClick={() => router.push("/login")}>Login</button>
+          <button className={styles.register} onClick={() => router.push("/register")}>Register</button>
         </div>
       )}
     </div>

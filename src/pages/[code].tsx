@@ -6,6 +6,8 @@ import { useRouter } from "next/dist/client/router";
 import Pusher from "pusher-js";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import styles from "./game.module.css";
+import generalStyles from "./styles.module.css";
 
 type GameProps = {
   user: Player;
@@ -81,10 +83,11 @@ export default function Game(props: GameProps) {
   }
 
   return (
-    <div>
-      {!game ? <div>
-        <h1>Waiting for players... 1/2</h1>
-        <h2>Code: {props.code}</h2>
+    <div className={styles.bg}>
+      {!game ? <div className={generalStyles.bg}>
+        <h1 className={generalStyles.heading} style={{ fontSize: "3em" }}>waiting for a teammate...</h1>
+        <h2 className={generalStyles.subheading} style={{ fontSize: "1.5em" }}>tip: remember to press "take from deck"</h2>
+        <h2 className={styles.code}>code: {props.code}</h2>
         </div>
       :
         <>

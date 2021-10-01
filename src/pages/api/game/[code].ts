@@ -29,7 +29,7 @@ let games: Game[] = [];
 export function deleteInactive() {
     const currentTime = (new Date()).getTime();
     
-    games.filter(g => g.lastUpdated && currentTime - g.lastUpdated.getTime() >= 10 * 1000).forEach(g => deleteGame(g.code));
+    games.filter(g => g.lastUpdated && currentTime - g.lastUpdated.getTime() >= 3 * 60 * 1000).forEach(g => deleteGame(g.code));
 }
 
 export default createEndpoint({

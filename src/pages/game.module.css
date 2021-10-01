@@ -1,0 +1,12 @@
+.bg {
+    background-color: var(--bg);
+    height: 100vh;
+}
+
+.code {
+    color: var(--button-bg);
+    font-size: 1em;
+    position: absolute;
+    bottom: 1em;
+    left: 1em;
+}

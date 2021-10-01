@@ -1,0 +1,19 @@
+:root {
+    --theme: #F7558B;
+    --bg: #0f0f0f;
+    --button-bg: #474747;
+    --input-bg: #CCCCCC;
+}
+
+h1, h2, h3 {
+    padding: 0;
+    margin: 0;
+}
+
+button {
+    background: none;
+    border: none;
+    color: white;
+    text-transform: lowercase;
+    cursor: pointer;
+}
