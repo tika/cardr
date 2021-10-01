@@ -2,6 +2,7 @@ import { fetcher } from "@app/fetcher";
 import { JWT } from "@app/jwt";
 import { Player } from "@app/santise";
 import { GetServerSideProps } from "next";
+import { useRouter } from "next/dist/client/router";
 import Pusher from "pusher-js";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -27,9 +28,12 @@ export interface Game {
   hand0: Card | null; // stores turn 0 hand
   hand1: Card | null; // stores turn 1 hand
   turn: 0 | 1;
+  lastUpdated?: Date;
 };
 
 export default function Game(props: GameProps) {
+  const router = useRouter();
+
   const [game, setGame] = useState<Game | undefined>();
   // const [isTurn, setIsTurn] = useState<boolean>(false);
   const [me, setMe] = useState<0 | 1>(0);
@@ -40,9 +44,6 @@ export default function Game(props: GameProps) {
       .then((res: any) => {
         toast(res.status); // res.status === what the error/success code is
         if (res.status.includes("joined")) {
-          console.log(res.turn);
-          console.log(res.turn ? 0 : 1);
-
           setMe(res.turn ? 0 : 1);
 
           if (!res.turn) {
@@ -59,12 +60,15 @@ export default function Game(props: GameProps) {
     });
 
     // We are only sending pusher reqs to our game
-    const channel = pusher.subscribe(props.code); 
+    const channel = pusher.subscribe(props.code);
 
     channel.bind("game-update", (data: Game) => {
       console.log(data);
       setGame(data);
-      // setIsTurn(data.turn === me ? true : false);
+    });
+
+    channel.bind("game-delete", () => {
+      router.push("/");
     });
 
     return () => pusher.unsubscribe(props.code);

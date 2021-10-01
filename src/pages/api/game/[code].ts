@@ -6,7 +6,14 @@ import Pusher from "pusher";
 import { Card, Game } from "src/pages/[code]";
 
 export async function sendUpdate(code: string) {
-    await pusher.trigger(code, "game-update", getGame(code));
+    deleteInactive();
+
+    const game = getGame(code);
+    
+    if (game) {
+        game.lastUpdated = new Date();
+        await pusher.trigger(code, "game-update", getGame(code));
+    }
 }
 
 export const pusher = new Pusher({
@@ -19,15 +26,24 @@ export const pusher = new Pusher({
 
 let games: Game[] = [];
 
+export function deleteInactive() {
+    const currentTime = (new Date()).getTime();
+    
+    games.filter(g => g.lastUpdated && currentTime - g.lastUpdated.getTime() >= 10 * 1000).forEach(g => deleteGame(g.code));
+}
+
 export default createEndpoint({
     GET: async (req, res) => {
         const code = req.query.code;
+        
         res.send({ game: games.filter(g => g.code === code)[0] });
     },
     PUT: async (req, res) => { // Handles joining
         const code = req.query.code as string;
         const { player } = req.body as { player: Player };
         
+        deleteInactive();
+
         // if there is already a game with this code && player is not already in this game
         if (isGame(code)) {
             if (getGame(code)!.players.length >= 2) {
@@ -98,6 +114,20 @@ export default createEndpoint({
         
         res.send({ game });
     },
+    DELETE: async (req, res) => {
+        const code = req.query.code;
+        const user = JWT.parseRequest(req);
+
+        if (!user) throw new NotFound("user");
+
+        // Check if the user requesting is in the game
+        const game = getPlayersGame(user.id);
+        
+        // todo: update error code
+        if (!game || game.code !== code) throw new NotFound("game");
+
+        console.log(user + " disconnected");
+    },
 });
 
 function doesUserWin(compare: Card[], user: 0 | 1) {
@@ -146,6 +176,8 @@ function generateShuffleCards() {
 
 export function createGame(code: string, initialPlayer: Player): void {
     if (isGame(code)) return;
+
+    console.log("Created: " + code);
     
     games.push({
         code,
@@ -161,6 +193,8 @@ export function createGame(code: string, initialPlayer: Player): void {
 
 export function deleteGame(code: string) {
     games = games.filter(g => g.code !== code);
+    console.log("Deleted game: " + code);
+    pusher.trigger(code, "game-delete", {});
 }
 
 export function getPlayersGame(player: string) {
