@@ -32,6 +32,9 @@ export default function Landing(props: LandingProps) {
                   if (Object.keys(v).length === 0) {
                     setJoinCode("");
                     toast.error("Invalid game code");
+                  } else if (v.players && v.players.length >= 2) {
+                    setJoinCode("");
+                    toast.error("Game full")
                   } else router.push(`/${joinCode}`);
               });
             }}>Join game</button>

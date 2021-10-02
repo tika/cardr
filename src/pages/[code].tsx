@@ -46,7 +46,14 @@ export default function Game(props: GameProps) {
   useEffect(() => {
     fetcher("PUT", `/game/${props.code}`, { player: props.user })
       .then((res: any) => {
+        if (res.status === "full-game") {
+          toast.error("Game full");
+          router.push("/");
+          return;
+        }
+
         toast(res.status); // res.status === what the error/success code is
+
         if (res.status.includes("joined")) { 
           setMe(res.turn ? 0 : 1);
 
@@ -110,7 +117,9 @@ export default function Game(props: GameProps) {
             <h1 className={styles.game}>game with <span>{game.players.filter(p => p.name !== props.user.name)[0].name}</span></h1>
             <button onClick={takeFromDeck} disabled={game.turn !== me}>Take from deck</button>
             <h2 className={styles.code}>code: {props.code}</h2>
-            <CardComp color="yellow" number={5} />
+            <div className={styles.deckArea}>
+              {game.cards0.map((c) => <CardComp color={c.color} number={c.number} />)}
+            </div>
           </div>}
         </>
       }

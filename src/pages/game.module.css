@@ -19,3 +19,13 @@
 .game > span {
     color: var(--theme);
 }
+
+.deckArea {
+    width: calc((5em + 10px) * 5);
+    flex-wrap: wrap;
+    display: flex;
+    row-gap: 10px;
+    column-gap: 10px;
+    max-height: calc((7em + 10px) * 3);
+    overflow-y: auto;
+}
