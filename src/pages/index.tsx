@@ -20,11 +20,11 @@ export default function Landing(props: LandingProps) {
       <h1 className={styles.heading}>cardr</h1>
       <h2 className={styles.subheading}>the least interactive game</h2>
       {props.user ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "1em", marginTop: "3em", width: "25em" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1em", marginTop: "3em", width: "20em" }}>
           <button className={styles.login} onClick={() => fetcher("GET", "/game/start").then((d: any) => router.push(`/${d.code}`))}>Find game</button>
           <div style={{ display: "flex", gap: "1em" }}>
-            <input style={{ width: "100%" }} className={styles.input} placeholder="join code" value={joinCode} onChange={(e) => setJoinCode(e.target.value)} />
-            <button style={{ width: "10em" }} className={styles.register} onClick={() => {
+            <input style={{ width: "calc(100% - 8em)" }} className={styles.input} placeholder="join code" value={joinCode} onChange={(e) => setJoinCode(e.target.value)} />
+            <button style={{ width: "8em" }} className={styles.register} onClick={() => {
               if (!joinCode) return;
               console.log(joinCode);
               fetcher("GET", `/game/${joinCode}`)

@@ -80,6 +80,11 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
+"@fontsource/poppins@^4.5.0":
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/poppins/-/poppins-4.5.0.tgz#a419697b85864afbf8363f5c247b1e9d1f117564"
+  integrity sha512-RqgMIQqKHWNH3IUj+a0MAhlb4g5fftsXRTJ2bauefBmfM8Ja5q+qQZjKwyB/iCc+paJD320zFnLJ8G+y1ZyemQ==
+
 "@hapi/accept@5.0.2":
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@hapi/accept/-/accept-5.0.2.tgz#ab7043b037e68b722f93f376afb05e85c0699523"
@@ -2118,6 +2123,11 @@ https-proxy-agent@^5.0.0:
   dependencies:
     agent-base "6"
     debug "4"
+
+iconic-react@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/iconic-react/-/iconic-react-1.0.3.tgz#eb1785895915395ed58c14226af93b6411359ec1"
+  integrity sha512-6fK4V7PVh/T6yzBptzUpy1KdOs+TFQ0AjNlejFXKB1GVb21ibpfjA4RhjaWH9AGX1yCkLqQR9A+WPqLmZTE9Ig==
 
 iconv-lite@0.4.24:
   version "0.4.24"

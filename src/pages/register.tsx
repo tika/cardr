@@ -5,6 +5,7 @@ import { JWT } from "@app/jwt";
 import { useState } from "react";
 import { registerSchema } from "@schemas/users";
 import toast from "react-hot-toast";
+import styles from "./styles.module.css";;
 
 export default function Register() {
   const router = useRouter();
@@ -22,15 +23,14 @@ export default function Register() {
       fetcher("PUT", "/users", { name: username, password }).then(() =>
         router.push("/")
       );
-    }
-
-    
+    }    
   }
 
   return (
-    <div>
-      <h1>Register</h1>
+    <div className={styles.bg}>
+      <h1 className={styles.heading}>Register</h1>
       <form
+        className={styles.form}
         onSubmit={(e) => {
           e.preventDefault();
           register();
@@ -53,7 +53,7 @@ export default function Register() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
-        <button>Register</button>
+        <button className={styles.login} style={{ width: "8em" }}>Register</button>
       </form>
     </div>
   );

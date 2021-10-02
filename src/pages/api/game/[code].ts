@@ -126,7 +126,9 @@ export default createEndpoint({
         // todo: update error code
         if (!game || game.code !== code) throw new NotFound("game");
 
-        console.log(user + " disconnected");
+        deleteGame(code);
+
+        res.send({ deleted: true })
     },
 });
 

@@ -10,13 +10,14 @@
 .heading {
     /* text-transform: capitalize; */
     color: white;
-    font-size: 6em;
+    font-weight: 900;
+    font-size: 3em;
 }
 
 .subheading {
     color: var(--theme);
-    font-weight: 700;
-    font-size: 2em;
+    font-weight: 500;
+    font-size: 1.5em;
 }
 
 .login {
@@ -65,4 +66,15 @@
     padding: 0.75em 1.25em;
     color: black;
     border-radius: 0.5em;
+}
+
+.iconButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1em;
+    background-color: var(--button-bg);
+    padding: 0.75em 1.25em;
+    border-radius: 0.5em;
+    font-weight: 600;
 }

@@ -10,3 +10,12 @@
     bottom: 1em;
     left: 1em;
 }
+
+.game {
+    font-size: 2em;
+    color: white;
+}
+
+.game > span {
+    color: var(--theme);
+}

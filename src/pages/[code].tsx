@@ -1,6 +1,8 @@
 import { fetcher } from "@app/fetcher";
 import { JWT } from "@app/jwt";
 import { Player } from "@app/santise";
+import { CardComp } from "@components/Card";
+import { LogOut } from "iconic-react";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/dist/client/router";
 import Pusher from "pusher-js";
@@ -45,7 +47,7 @@ export default function Game(props: GameProps) {
     fetcher("PUT", `/game/${props.code}`, { player: props.user })
       .then((res: any) => {
         toast(res.status); // res.status === what the error/success code is
-        if (res.status.includes("joined")) {
+        if (res.status.includes("joined")) { 
           setMe(res.turn ? 0 : 1);
 
           if (!res.turn) {
@@ -87,19 +89,29 @@ export default function Game(props: GameProps) {
       {!game ? <div className={generalStyles.bg}>
         <h1 className={generalStyles.heading} style={{ fontSize: "3em" }}>waiting for a teammate...</h1>
         <h2 className={generalStyles.subheading} style={{ fontSize: "1.5em" }}>tip: remember to press "take from deck"</h2>
+        <button className={generalStyles.iconButton} style={{ width: "10em", marginTop: "1em" }} onClick={() => 
+          {
+            router.push("/")
+            fetcher("DELETE", `/game/${props.code}`).catch((err) => toast.error(err))
+          }
+        }>
+          <LogOut size={25} color="white" />
+          exit
+        </button>
         <h2 className={styles.code}>code: {props.code}</h2>
         </div>
       :
         <>
-        {game.deck.length === 0 ? <div>
-          <h1>{game.cards0.length > game.cards1.length ? game.players[0].name : game.players[1].name} won!</h1>
-          <h2>{game.cards0.length} cards :: {game.players[0].name}</h2>
-          <h2>{game.cards1.length} cards :: {game.players[1].name}</h2>
-        </div>: <div>
-          <h1>Game: {game.code}</h1>
-          <h2>Players: {game.players.map(p => p.name).join(", ")}</h2>
-          <button onClick={takeFromDeck} disabled={game.turn !== me}>Take from deck</button> {/* todo: have this disabled when it is not our turn*/}
-        </div>}
+          {game.deck.length === 0 ? <div>
+            <h1>{game.cards0.length > game.cards1.length ? game.players[0].name : game.players[1].name} won!</h1>
+            <h2>{game.cards0.length} cards :: {game.players[0].name}</h2>
+            <h2>{game.cards1.length} cards :: {game.players[1].name}</h2>
+          </div> : <div>
+            <h1 className={styles.game}>game with <span>{game.players.filter(p => p.name !== props.user.name)[0].name}</span></h1>
+            <button onClick={takeFromDeck} disabled={game.turn !== me}>Take from deck</button>
+            <h2 className={styles.code}>code: {props.code}</h2>
+            <CardComp color="yellow" number={5} />
+          </div>}
         </>
       }
     </div>
