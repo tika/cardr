@@ -119,14 +119,36 @@ export default function Game(props: GameProps) {
             <h1>{game.cards0.length > game.cards1.length ? game.players[0].name : game.players[1].name} won!</h1>
             <h2>{game.cards0.length} cards :: {game.players[0].name}</h2>
             <h2>{game.cards1.length} cards :: {game.players[1].name}</h2>
-          </div> : <div>
-            <h1 className={styles.game}>game with <span>{game.players.filter(p => p.name !== props.user.name)[0].name}</span></h1>
-            <ChooseCard 
-              disabled={game.turn === me} 
-              isTurnedOver={me === 0 ? game.hand0 !== null : game.hand1 !== null} 
-              onTake={() => fetcher("POST", `/game/${props.code}`)} 
-              topCard={game.deck[game.deck.length - 1]} 
-            />
+          </div> : <div className={styles.game}>
+            <h1 className={styles.title}>game with <span>{game.players.filter(p => p.name !== props.user.name)[0].name}</span></h1>
+            <div className={styles.playground}>
+              <div className={styles.cards}>
+                <div>
+                  <ChooseCard 
+                    disabled={game.turn === me} 
+                    isTurnedOver={me === 0 ? game.hand0 !== null : game.hand1 !== null} 
+                    onTake={() => fetcher("POST", `/game/${props.code}`)} 
+                    topCard={game.deck[game.deck.length - 1]} 
+                  />
+                  <h1>{me === 0 ? game.players[0].name : game.players[1].name}</h1>
+                </div>
+                <div>
+                  <ChooseCard 
+                    disabled={game.turn === me} 
+                    isTurnedOver={me === 0 ? game.hand0 !== null : game.hand1 !== null} 
+                    onTake={() => fetcher("POST", `/game/${props.code}`)} 
+                    topCard={game.deck[game.deck.length - 1]} 
+                  />
+                  <h1>{me === 0 ? game.players[1].name : game.players[0].name}</h1>
+                </div>
+              </div>
+              
+              <div className={styles.score}>
+                <h1>24</h1>
+                <h2>:</h2>
+                <h1>14</h1>
+              </div>
+            </div>
             <h2 className={styles.code}>code: {props.code}</h2>
             <div className={styles.deckArea}>
               {game.cards0.map((c) => <CardComp color={c.color} number={c.number} />)}

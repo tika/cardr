@@ -11,12 +11,12 @@
     left: 1em;
 }
 
-.game {
+.title {
     font-size: 2em;
     color: white;
 }
 
-.game > span {
+.title > span {
     color: var(--theme);
 }
 
@@ -28,4 +28,52 @@
     column-gap: 10px;
     max-height: calc((7em + 10px) * 3);
     overflow-y: auto;
+}
+
+.game {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 3em;
+}
+
+.playground {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 8em;
+    gap: 4em;
+}
+
+.score {
+    display: flex;
+    flex-direction: row;
+    gap: 3em;
+}
+
+.score > h1 {
+    color: var(--theme);
+}
+
+.score > h2 {
+    color: white;
+    font-size: 2em;
+}
+
+.cards {
+    display: flex;
+    flex-direction: row;
+    gap: 20em;
+}
+
+.cards > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3em;
+}
+
+.cards > div > h1 {
+    color: white;
+    font-size: 1em;
 }
