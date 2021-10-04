@@ -2,6 +2,7 @@ import { fetcher } from "@app/fetcher";
 import { JWT } from "@app/jwt";
 import { Player } from "@app/santise";
 import { CardComp } from "@components/Card";
+import { ChooseCard } from "@components/ChooseCard";
 import { LogOut } from "iconic-react";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/dist/client/router";
@@ -39,8 +40,8 @@ export default function Game(props: GameProps) {
   const router = useRouter();
 
   const [game, setGame] = useState<Game | undefined>();
-  // const [isTurn, setIsTurn] = useState<boolean>(false);
   const [me, setMe] = useState<0 | 1>(0);
+  const [turned, setTurned]= useState(false);
 
   // Once a player joins the game, create a socket stating who we are
   useEffect(() => {
@@ -85,11 +86,16 @@ export default function Game(props: GameProps) {
     return () => pusher.unsubscribe(props.code);
   }, []);
 
-  function takeFromDeck() {
-    // this is bad usage of a rest API but we will just use it to get the next move
-    // -> make sure this user is in the game tho
-    fetcher("POST", `/game/${props.code}`);
-  }
+  // function takeFromDeck() {
+  //   // setTurned(true);
+
+  //   // this is bad usage of a rest API but we will just use it to get the next move
+  //   // -> make sure this user is in the game tho
+    
+  //   setTimeout(() => {
+  //     fetcher("POST", `/game/${props.code}`);
+  //   }, 1 * 1000);
+  // }
 
   return (
     <div className={styles.bg}>
@@ -115,7 +121,12 @@ export default function Game(props: GameProps) {
             <h2>{game.cards1.length} cards :: {game.players[1].name}</h2>
           </div> : <div>
             <h1 className={styles.game}>game with <span>{game.players.filter(p => p.name !== props.user.name)[0].name}</span></h1>
-            <button onClick={takeFromDeck} disabled={game.turn !== me}>Take from deck</button>
+            <ChooseCard 
+              disabled={game.turn === me} 
+              isTurnedOver={me === 0 ? game.hand0 !== null : game.hand1 !== null} 
+              onTake={() => fetcher("POST", `/game/${props.code}`)} 
+              topCard={game.deck[game.deck.length - 1]} 
+            />
             <h2 className={styles.code}>code: {props.code}</h2>
             <div className={styles.deckArea}>
               {game.cards0.map((c) => <CardComp color={c.color} number={c.number} />)}
