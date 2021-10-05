@@ -8,30 +8,30 @@ interface ChooseCardProps {
     isTurnedOver: boolean;
 }
 
+export function getRoman(num: Card['number']) {
+    switch (num) {
+        case 1: return "I";
+        case 2: return "II";
+        case 3: return "III";
+        case 4: return "IV";
+        case 5: return "V";
+        case 6: return "VI";
+        case 7: return "VII";
+        case 8: return "VIII";
+        case 9: return "IX";
+        case 10: return "X";
+    }
+}
+
+export function getColor(color: Card['color']) {
+    switch (color) {
+        case "red": return "#EF4444";
+        case "black": return "#171717";
+        case "yellow": return "#FCD34D";
+    }
+}
+
 export function ChooseCard(props: ChooseCardProps) {
-    function getRoman(num: typeof props.topCard.number) {
-        switch (num) {
-            case 1: return "I";
-            case 2: return "II";
-            case 3: return "III";
-            case 4: return "IV";
-            case 5: return "V";
-            case 6: return "VI";
-            case 7: return "VII";
-            case 8: return "VIII";
-            case 9: return "IX";
-            case 10: return "X";
-        }
-    }
-
-    function getColor(color: typeof props.topCard.color) {
-        switch (color) {
-            case "red": return "#EF4444";
-            case "black": return "#171717";
-            case "yellow": return "#FCD34D";
-        }
-    }
-
     return (
         <div 
             onClick={() => !props.disabled && props.onTake()}

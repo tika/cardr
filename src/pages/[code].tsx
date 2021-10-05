@@ -3,6 +3,7 @@ import { JWT } from "@app/jwt";
 import { Player } from "@app/santise";
 import { CardComp } from "@components/Card";
 import { ChooseCard } from "@components/ChooseCard";
+import { OpponentCard } from "@components/OpponentCard";
 import { LogOut } from "iconic-react";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/dist/client/router";
@@ -133,26 +134,23 @@ export default function Game(props: GameProps) {
                   <h1>{me === 0 ? game.players[0].name : game.players[1].name}</h1>
                 </div>
                 <div>
-                  <ChooseCard 
-                    disabled={game.turn === me} 
-                    isTurnedOver={me === 0 ? game.hand0 !== null : game.hand1 !== null} 
-                    onTake={() => fetcher("POST", `/game/${props.code}`)} 
+                  <OpponentCard 
+                    isTurn={game.turn === me} 
+                    isTurnedOver={me === 0 ? game.hand1 !== null : game.hand0 !== null} 
                     topCard={game.deck[game.deck.length - 1]} 
                   />
+                  
                   <h1>{me === 0 ? game.players[1].name : game.players[0].name}</h1>
                 </div>
               </div>
               
               <div className={styles.score}>
-                <h1>24</h1>
+                <h1>{me === 0 ? game.cards0.length : game.cards1.length}</h1>
                 <h2>:</h2>
-                <h1>14</h1>
+                <h1>{me === 1 ? game.cards0.length : game.cards1.length}</h1>
               </div>
             </div>
             <h2 className={styles.code}>code: {props.code}</h2>
-            <div className={styles.deckArea}>
-              {game.cards0.map((c) => <CardComp color={c.color} number={c.number} />)}
-            </div>
           </div>}
         </>
       }
