@@ -181,6 +181,7 @@ export function createGame(code: string, initialPlayer: Player): void {
 
     console.log("Created: " + code);
     
+    // initial game state
     games.push({
         code,
         players: [initialPlayer],
@@ -189,7 +190,8 @@ export function createGame(code: string, initialPlayer: Player): void {
         cards1: [],
         hand0: null,
         hand1: null,
-        turn: 0
+        turn: 0,
+        fullHands: [],
     });
 }
 

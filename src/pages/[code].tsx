@@ -1,7 +1,6 @@
 import { fetcher } from "@app/fetcher";
 import { JWT } from "@app/jwt";
 import { Player } from "@app/santise";
-import { CardComp } from "@components/Card";
 import { ChooseCard } from "@components/ChooseCard";
 import { OpponentCard } from "@components/OpponentCard";
 import { LogOut } from "iconic-react";
@@ -12,6 +11,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import styles from "./game.module.css";
 import generalStyles from "./styles.module.css";
+import { Arrow } from '@components/Arrow';
 
 type GameProps = {
   user: Player;
@@ -35,14 +35,15 @@ export interface Game {
   hand1: Card | null; // stores turn 1 hand
   turn: 0 | 1;
   lastUpdated?: Date;
+  fullHands: Card[];
 };
 
 export default function Game(props: GameProps) {
   const router = useRouter();
 
+  const [compare, setCompare] = useState(false);
   const [game, setGame] = useState<Game | undefined>();
   const [me, setMe] = useState<0 | 1>(0);
-  const [turned, setTurned]= useState(false);
 
   // Once a player joins the game, create a socket stating who we are
   useEffect(() => {
@@ -76,8 +77,16 @@ export default function Game(props: GameProps) {
     const channel = pusher.subscribe(props.code);
 
     channel.bind("game-update", (data: Game) => {
-      console.log(data);
-      setGame(data);
+      
+      // if it's not just a new game and both players don't have any cards in their hands
+      if (data.deck.length !== 30 && data.hand0 == null && data.hand1 == null) {
+        setCompare(true);
+
+        setTimeout(() => {
+          setCompare(false);
+          setGame(data);
+        }, 3 * 1000);
+      } else setGame(data);
     });
 
     channel.bind("game-delete", () => {
@@ -86,17 +95,6 @@ export default function Game(props: GameProps) {
 
     return () => pusher.unsubscribe(props.code);
   }, []);
-
-  // function takeFromDeck() {
-  //   // setTurned(true);
-
-  //   // this is bad usage of a rest API but we will just use it to get the next move
-  //   // -> make sure this user is in the game tho
-    
-  //   setTimeout(() => {
-  //     fetcher("POST", `/game/${props.code}`);
-  //   }, 1 * 1000);
-  // }
 
   return (
     <div className={styles.bg}>
@@ -133,13 +131,13 @@ export default function Game(props: GameProps) {
                   />
                   <h1>{me === 0 ? game.players[0].name : game.players[1].name}</h1>
                 </div>
+                {compare && <Arrow style={{ marginTop: "4.5em" }} flipped={game.cards1.length > game.cards0.length} scaleFactor={1} />}
                 <div>
                   <OpponentCard 
                     isTurn={game.turn === me} 
                     isTurnedOver={me === 0 ? game.hand1 !== null : game.hand0 !== null} 
                     topCard={game.deck[game.deck.length - 1]} 
                   />
-                  
                   <h1>{me === 0 ? game.players[1].name : game.players[0].name}</h1>
                 </div>
               </div>

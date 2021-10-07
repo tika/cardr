@@ -63,7 +63,7 @@
 .cards {
     display: flex;
     flex-direction: row;
-    gap: 20em;
+    gap: 10em;
 }
 
 .cards > div {
