@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import styles from "./game.module.css";
 import generalStyles from "./styles.module.css";
 import { Arrow } from '@components/Arrow';
+import { doesUserWin } from "./api/game/[code]";
 
 type GameProps = {
   user: Player;
@@ -82,6 +83,8 @@ export default function Game(props: GameProps) {
       if (data.deck.length !== 30 && data.hand0 == null && data.hand1 == null) {
         setCompare(true);
 
+        console.log(game)
+
         setTimeout(() => {
           setCompare(false);
           setGame(data);
@@ -131,7 +134,8 @@ export default function Game(props: GameProps) {
                   />
                   <h1>{me === 0 ? game.players[0].name : game.players[1].name}</h1>
                 </div>
-                {compare && <Arrow style={{ marginTop: "4.5em" }} flipped={game.cards1.length > game.cards0.length} scaleFactor={1} />}
+                {game.fullHands.length == 2 && <Arrow style={{ marginTop: "4.5em" }} flipped={(game.fullHands[0].color === game.fullHands[1].color && game.fullHands[0].number > game.fullHands[1].number)
+                || doesUserWin(game.fullHands, 0)} scaleFactor={1} />}
                 <div>
                   <OpponentCard 
                     isTurn={game.turn === me} 

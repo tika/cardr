@@ -92,7 +92,8 @@ export default createEndpoint({
 
         // if we are tryna compare them
         if (game.hand1 && game.hand0) {
-            
+            game.fullHands = [game.hand0, game.hand1];
+
             // work out who wins
             if ((game.hand1.color === game.hand0.color && game.hand1.number > game.hand0.number)
                 || doesUserWin([game.hand1, game.hand0], 0)) {
@@ -132,7 +133,7 @@ export default createEndpoint({
     },
 });
 
-function doesUserWin(compare: Card[], user: 0 | 1) {
+export function doesUserWin(compare: Card[], user: 0 | 1) {
     const other = user === 0 ? 1 : 0;
 
     if (compare[user].color === "red" && compare[other].color === "black")
