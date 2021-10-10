@@ -1,7 +1,7 @@
 import { fetcher } from "@app/fetcher";
 import { JWT } from "@app/jwt";
 import { Player } from "@app/santise";
-import { CardComp } from "@components/Card";
+import { Arrow } from "@components/Arrow";
 import { ChooseCard } from "@components/ChooseCard";
 import { OpponentCard } from "@components/OpponentCard";
 import { LogOut } from "iconic-react";
@@ -10,6 +10,7 @@ import { useRouter } from "next/dist/client/router";
 import Pusher from "pusher-js";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { doesUserWin } from "./api/game/[code]";
 import styles from "./game.module.css";
 import generalStyles from "./styles.module.css";
 
@@ -42,7 +43,6 @@ export default function Game(props: GameProps) {
 
   const [game, setGame] = useState<Game | undefined>();
   const [me, setMe] = useState<0 | 1>(0);
-  const [turned, setTurned]= useState(false);
 
   // Once a player joins the game, create a socket stating who we are
   useEffect(() => {
@@ -76,7 +76,27 @@ export default function Game(props: GameProps) {
     const channel = pusher.subscribe(props.code);
 
     channel.bind("game-update", (data: Game) => {
-      console.log(data);
+      if (data.deck.length !== 30 && data.hand0 !== null && data.hand1 !== null) {
+        console.log("3s starts now");
+        setTimeout(() => {
+          console.log("hi we here")
+          
+          if (!game || game.hand0 === null || game.hand1 === null) return;
+          
+          const _game = { ...game };
+          
+          if (doesUserWin(game.hand1, game.hand0)) _game.cards1.push(game.hand1, game.hand0);
+          else _game.cards0.push(game.hand1, game.hand0);
+
+          console.log(_game);
+
+          _game.hand0 = null;
+          _game.hand1 = null;
+
+          setGame(_game);
+        }, 3 * 1000);  
+      }
+      
       setGame(data);
     });
 
@@ -87,16 +107,11 @@ export default function Game(props: GameProps) {
     return () => pusher.unsubscribe(props.code);
   }, []);
 
-  // function takeFromDeck() {
-  //   // setTurned(true);
-
-  //   // this is bad usage of a rest API but we will just use it to get the next move
-  //   // -> make sure this user is in the game tho
-    
-  //   setTimeout(() => {
-  //     fetcher("POST", `/game/${props.code}`);
-  //   }, 1 * 1000);
-  // }
+  // should we be comparing
+  function isTransition() {
+    if (!game) return false;
+    return game.hand0 !== null && game.hand1 !== null; 
+  }
 
   return (
     <div className={styles.bg}>
@@ -126,20 +141,26 @@ export default function Game(props: GameProps) {
               <div className={styles.cards}>
                 <div>
                   <ChooseCard 
-                    disabled={game.turn === me} 
+                    disabled={isTransition() || game.turn === me} 
                     isTurnedOver={me === 0 ? game.hand0 !== null : game.hand1 !== null} 
-                    onTake={() => fetcher("POST", `/game/${props.code}`)} 
-                    topCard={game.deck[game.deck.length - 1]} 
+                    onTake={() => fetcher("POST", `/game/${props.code}`)}
+                    topCard={game.deck[game.deck.length - 1 - me]}
                   />
                   <h1>{me === 0 ? game.players[0].name : game.players[1].name}</h1>
                 </div>
+                {isTransition() && 
+                  <Arrow 
+                    style={{ marginTop: "4.5em" }} 
+                    flipped={me === 1 ? doesUserWin(game.hand1, game.hand0) : doesUserWin(game.hand0, game.hand1)} 
+                    scaleFactor={1} 
+                  />
+                }
                 <div>
                   <OpponentCard 
-                    isTurn={game.turn === me} 
+                    isTurn={!isTransition() && game.turn === me} 
                     isTurnedOver={me === 0 ? game.hand1 !== null : game.hand0 !== null} 
-                    topCard={game.deck[game.deck.length - 1]} 
+                    topCard={game.deck[game.deck.length - 1 - (me === 1 ? 0 : 1)]} 
                   />
-                  
                   <h1>{me === 0 ? game.players[1].name : game.players[0].name}</h1>
                 </div>
               </div>

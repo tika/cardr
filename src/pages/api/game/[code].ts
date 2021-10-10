@@ -90,27 +90,22 @@ export default createEndpoint({
             game.hand0 = card;
         } else game.hand1 = card;
 
+        game.turn = game.turn === 0 ? 1 : 0;
+
+        // now we just need to send out an "update req"
+        sendUpdate(code);
+
         // if we are tryna compare them
         if (game.hand1 && game.hand0) {
             
             // work out who wins
-            if ((game.hand1.color === game.hand0.color && game.hand1.number > game.hand0.number)
-                || doesUserWin([game.hand1, game.hand0], 0)) {
-                // user 1 wins
-                game.cards1.push(game.hand0, game.hand1);
-            } else { // user 0 wins
-                game.cards0.push(game.hand0, game.hand1);
-            }
+            if (doesUserWin(game.hand1, game.hand0)) game.cards1.push(game.hand0, game.hand1);
+            else game.cards0.push(game.hand0, game.hand1);
 
             // reset
             game.hand0 = null;
             game.hand1 = null;
         }
-
-        game.turn = game.turn === 0 ? 1 : 0;
-
-        // now we just need to send out an "update req"
-        sendUpdate(code);
         
         res.send({ game });
     },
@@ -132,7 +127,14 @@ export default createEndpoint({
     },
 });
 
-function doesUserWin(compare: Card[], user: 0 | 1) {
+export function doesUserWin(hand1: Card | null, hand0: Card | null) {
+    if (!hand1 || !hand0) return false;
+    
+    return (hand1.color === hand0.color && hand1.number > hand0.number)
+                || doesUserColorWin([hand1, hand0], 0);
+}
+
+function doesUserColorWin(compare: Card[], user: 0 | 1) {
     const other = user === 0 ? 1 : 0;
 
     if (compare[user].color === "red" && compare[other].color === "black")
