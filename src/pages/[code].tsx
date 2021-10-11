@@ -1,6 +1,7 @@
 import { fetcher } from "@app/fetcher";
 import { JWT } from "@app/jwt";
 import { Player } from "@app/santise";
+import { doesUserWin } from "@app/utils";
 import { Arrow } from "@components/Arrow";
 import { ChooseCard } from "@components/ChooseCard";
 import { OpponentCard } from "@components/OpponentCard";
@@ -10,7 +11,6 @@ import { useRouter } from "next/dist/client/router";
 import Pusher from "pusher-js";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { doesUserWin } from "./api/game/[code]";
 import styles from "./game.module.css";
 import generalStyles from "./styles.module.css";
 
@@ -27,7 +27,6 @@ export interface Card {
 }
 
 export interface Game {
-  code: string;
   players: Player[];
   deck: Card[];
   cards0: Card[]; // when comparison of hands are done, either goes to player 0 or 1's decks
@@ -36,7 +35,7 @@ export interface Game {
   hand1: Card | null; // stores turn 1 hand
   turn: 0 | 1;
   lastUpdated?: Date;
-};
+}
 
 export default function Game(props: GameProps) {
   const router = useRouter();
@@ -46,8 +45,8 @@ export default function Game(props: GameProps) {
 
   // Once a player joins the game, create a socket stating who we are
   useEffect(() => {
-    fetcher("PUT", `/game/${props.code}`, { player: props.user })
-      .then((res: any) => {
+    fetcher("PUT", `/game/${props.code}`, { player: props.user }).then(
+      (res: any) => {
         if (res.status === "full-game") {
           toast.error("Game full");
           router.push("/");
@@ -56,7 +55,7 @@ export default function Game(props: GameProps) {
 
         toast(res.status); // res.status === what the error/success code is
 
-        if (res.status.includes("joined")) { 
+        if (res.status.includes("joined")) {
           setMe(res.turn ? 0 : 1);
 
           if (!res.turn) {
@@ -64,7 +63,8 @@ export default function Game(props: GameProps) {
             setGame(res.game);
           }
         }
-      });
+      }
+    );
   }, []);
 
   useEffect(() => {
@@ -76,16 +76,23 @@ export default function Game(props: GameProps) {
     const channel = pusher.subscribe(props.code);
 
     channel.bind("game-update", (data: Game) => {
-      if (data.deck.length !== 30 && data.hand0 !== null && data.hand1 !== null) {
+      console.log(data);
+
+      if (
+        data.deck.length !== 30 &&
+        data.hand0 !== null &&
+        data.hand1 !== null
+      ) {
         console.log("3s starts now");
         setTimeout(() => {
-          console.log("hi we here")
-          
+          console.log("hi we here");
+
           if (!game || game.hand0 === null || game.hand1 === null) return;
-          
+
           const _game = { ...game };
-          
-          if (doesUserWin(game.hand1, game.hand0)) _game.cards1.push(game.hand1, game.hand0);
+
+          if (doesUserWin(game.hand1, game.hand0))
+            _game.cards1.push(game.hand1, game.hand0);
           else _game.cards0.push(game.hand1, game.hand0);
 
           console.log(_game);
@@ -94,9 +101,9 @@ export default function Game(props: GameProps) {
           _game.hand1 = null;
 
           setGame(_game);
-        }, 3 * 1000);  
+        }, 3 * 1000);
       }
-      
+
       setGame(data);
     });
 
@@ -110,71 +117,116 @@ export default function Game(props: GameProps) {
   // should we be comparing
   function isTransition() {
     if (!game) return false;
-    return game.hand0 !== null && game.hand1 !== null; 
+    return game.hand0 !== null && game.hand1 !== null;
   }
 
   return (
     <div className={styles.bg}>
-      {!game ? <div className={generalStyles.bg}>
-        <h1 className={generalStyles.heading} style={{ fontSize: "3em" }}>waiting for a teammate...</h1>
-        <h2 className={generalStyles.subheading} style={{ fontSize: "1.5em" }}>tip: remember to press "take from deck"</h2>
-        <button className={generalStyles.iconButton} style={{ width: "10em", marginTop: "1em" }} onClick={() => 
-          {
-            router.push("/")
-            fetcher("DELETE", `/game/${props.code}`).catch((err) => toast.error(err))
-          }
-        }>
-          <LogOut size={25} color="white" />
-          exit
-        </button>
-        <h2 className={styles.code}>code: {props.code}</h2>
+      {!game ? (
+        <div className={generalStyles.bg}>
+          <h1 className={generalStyles.heading} style={{ fontSize: "3em" }}>
+            waiting for a teammate...
+          </h1>
+          <h2
+            className={generalStyles.subheading}
+            style={{ fontSize: "1.5em" }}
+          >
+            tip: remember to press "take from deck"
+          </h2>
+          <button
+            className={generalStyles.iconButton}
+            style={{ width: "10em", marginTop: "1em" }}
+            onClick={() => {
+              router.push("/");
+              fetcher("DELETE", `/game/${props.code}`).catch((err) =>
+                toast.error(err)
+              );
+            }}
+          >
+            <LogOut size={25} color="white" />
+            exit
+          </button>
+          <h2 className={styles.code}>code: {props.code}</h2>
         </div>
-      :
+      ) : (
         <>
-          {game.deck.length === 0 ? <div>
-            <h1>{game.cards0.length > game.cards1.length ? game.players[0].name : game.players[1].name} won!</h1>
-            <h2>{game.cards0.length} cards :: {game.players[0].name}</h2>
-            <h2>{game.cards1.length} cards :: {game.players[1].name}</h2>
-          </div> : <div className={styles.game}>
-            <h1 className={styles.title}>game with <span>{game.players.filter(p => p.name !== props.user.name)[0].name}</span></h1>
-            <div className={styles.playground}>
-              <div className={styles.cards}>
-                <div>
-                  <ChooseCard 
-                    disabled={isTransition() || game.turn === me} 
-                    isTurnedOver={me === 0 ? game.hand0 !== null : game.hand1 !== null} 
-                    onTake={() => fetcher("POST", `/game/${props.code}`)}
-                    topCard={game.deck[game.deck.length - 1 - me]}
-                  />
-                  <h1>{me === 0 ? game.players[0].name : game.players[1].name}</h1>
-                </div>
-                {isTransition() && 
-                  <Arrow 
-                    style={{ marginTop: "4.5em" }} 
-                    flipped={me === 1 ? doesUserWin(game.hand1, game.hand0) : doesUserWin(game.hand0, game.hand1)} 
-                    scaleFactor={1} 
-                  />
-                }
-                <div>
-                  <OpponentCard 
-                    isTurn={!isTransition() && game.turn === me} 
-                    isTurnedOver={me === 0 ? game.hand1 !== null : game.hand0 !== null} 
-                    topCard={game.deck[game.deck.length - 1 - (me === 1 ? 0 : 1)]} 
-                  />
-                  <h1>{me === 0 ? game.players[1].name : game.players[0].name}</h1>
-                </div>
-              </div>
-              
-              <div className={styles.score}>
-                <h1>{me === 0 ? game.cards0.length : game.cards1.length}</h1>
-                <h2>:</h2>
-                <h1>{me === 1 ? game.cards0.length : game.cards1.length}</h1>
-              </div>
+          {game.deck.length === 0 ? (
+            <div>
+              <h1>
+                {game.cards0.length > game.cards1.length
+                  ? game.players[0].name
+                  : game.players[1].name}{" "}
+                won!
+              </h1>
+              <h2>
+                {game.cards0.length} cards :: {game.players[0].name}
+              </h2>
+              <h2>
+                {game.cards1.length} cards :: {game.players[1].name}
+              </h2>
             </div>
-            <h2 className={styles.code}>code: {props.code}</h2>
-          </div>}
+          ) : (
+            <div className={styles.game}>
+              <h1 className={styles.title}>
+                game with{" "}
+                <span>
+                  {
+                    game.players.filter((p) => p.name !== props.user.name)[0]
+                      .name
+                  }
+                </span>
+              </h1>
+              <div className={styles.playground}>
+                <div className={styles.cards}>
+                  <div>
+                    <ChooseCard
+                      disabled={isTransition() || game.turn === me}
+                      isTurnedOver={
+                        me === 0 ? game.hand0 !== null : game.hand1 !== null
+                      }
+                      onTake={() => fetcher("POST", `/game/${props.code}`)}
+                      topCard={me === 0 ? game.hand0 : game.hand1}
+                    />
+                    <h1>
+                      {me === 0 ? game.players[0].name : game.players[1].name}
+                    </h1>
+                  </div>
+                  {isTransition() && (
+                    <Arrow
+                      style={{ marginTop: "4.5em" }}
+                      flipped={
+                        me === 1
+                          ? doesUserWin(game.hand1, game.hand0)
+                          : doesUserWin(game.hand0, game.hand1)
+                      }
+                      scaleFactor={1}
+                    />
+                  )}
+                  <div>
+                    <OpponentCard
+                      isTurn={!isTransition() && game.turn === me}
+                      isTurnedOver={
+                        me === 0 ? game.hand1 !== null : game.hand0 !== null
+                      }
+                      hand={me === 0 ? game.hand1 : game.hand0}
+                    />
+                    <h1>
+                      {me === 0 ? game.players[1].name : game.players[0].name}
+                    </h1>
+                  </div>
+                </div>
+
+                <div className={styles.score}>
+                  <h1>{me === 0 ? game.cards0.length : game.cards1.length}</h1>
+                  <h2>:</h2>
+                  <h1>{me === 1 ? game.cards0.length : game.cards1.length}</h1>
+                </div>
+              </div>
+              <h2 className={styles.code}>code: {props.code}</h2>
+            </div>
+          )}
         </>
-      }
+      )}
     </div>
   );
 }
@@ -183,6 +235,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const user = JWT.parseRequest(ctx.req);
 
   return {
-    props: { user: user as Player, code: ctx.query.code, token: ctx.req.cookies.token },
+    props: {
+      user: user as Player,
+      code: ctx.query.code,
+      token: ctx.req.cookies.token,
+    },
   };
 };

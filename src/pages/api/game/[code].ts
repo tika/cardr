@@ -1,172 +1,165 @@
 import { createEndpoint } from "@app/endpoint";
-import { NotFound } from "@app/expections";
+import { DisplayedError, NotFound } from "@app/expections";
 import { JWT } from "@app/jwt";
+import redis from "@app/redis";
 import { Player } from "@app/santise";
+import { doesUserWin } from "@app/utils";
 import Pusher from "pusher";
 import { Card, Game } from "src/pages/[code]";
 
-export async function sendUpdate(code: string) {
-    deleteInactive();
+function getKey(code: string) {
+  return `game:${code}`;
+}
 
-    const game = getGame(code);
-    
-    if (game) {
-        game.lastUpdated = new Date();
-        await pusher.trigger(code, "game-update", getGame(code));
-    }
+export async function sendUpdate(code: string) {
+  const game = await getGame(code);
+
+  if (game) {
+    game.lastUpdated = new Date();
+
+    await pusher.trigger(code, "game-update", game);
+  }
 }
 
 export const pusher = new Pusher({
-    appId: process.env.APP_ID as string,
-    key: process.env.KEY as string,
-    secret: process.env.SECRET as string,
-    cluster: process.env.CLUSTER as string,
-    useTLS: true,
+  appId: process.env.APP_ID as string,
+  key: process.env.KEY as string,
+  secret: process.env.SECRET as string,
+  cluster: process.env.CLUSTER as string,
+  useTLS: true,
 });
-
-let games: Game[] = [];
-
-export function deleteInactive() {
-    const currentTime = (new Date()).getTime();
-    
-    games.filter(g => g.lastUpdated && currentTime - g.lastUpdated.getTime() >= 3 * 60 * 1000).forEach(g => deleteGame(g.code));
-}
 
 export default createEndpoint({
-    GET: async (req, res) => {
-        const code = req.query.code;
-        
-        res.send({ game: games.filter(g => g.code === code)[0] });
-    },
-    PUT: async (req, res) => { // Handles joining
-        const code = req.query.code as string;
-        const { player } = req.body as { player: Player };
-        
-        deleteInactive();
+  GET: async (req, res) => {
+    const code = req.query.code as string;
 
-        // if there is already a game with this code && player is not already in this game
-        if (isGame(code)) {
-            if (getGame(code)!.players.length >= 2) {
-                return res.json({ status: "full-game" });
-            }
+    res.send({ game: await getGame(code) });
+  },
+  PUT: async (req, res) => {
+    // Handles joining
+    const code = req.query.code as string;
+    const { player } = req.body as { player: Player };
 
-            if (getPlayersGame(player.id) && getPlayersGame(player.id).code === code) {
-                return res.json({ status: "already-in-game" });
-            } else {
-                addPlayer(code, player);
-                sendUpdate(code);
-                
-                return res.json({ status: "joined-game", turn: false, game: getGame(code) });
-            }
-        }
+    const game = await getGame(code);
 
-        createGame(code, player);
-        return res.json({ status: "joined-new-game", turn: true, game: getGame(code) });
-    },
-    POST: async (req, res) => {
-        const code = req.query.code;
-        const user = JWT.parseRequest(req);
+    // if there is already a game with this code && player is not already in this game
+    if (game) {
+      if (game.players.length >= 2) {
+        return res.json({ status: "full-game" });
+      }
 
-        if (!user) throw new NotFound("user");
-
-        // Check if the user requesting is in the game
-        const game = getPlayersGame(user.id);
-        
-        // todo: update error code
-        if (!game || game.code !== code) throw new NotFound("game");
-
-        // since we know this player is actually in the game
-        // now we can remove 1 from the deck, update that in the game, and send out a pusher req
-
-        if (game.deck.length <= 0) {
-            res.send({ ended: true });
-            return;
-        }
-
-        // remove top 1 from deck
-        const card = game.deck.pop() as Card;
-
-        if (game.players[0].id === user.id) {
-            game.hand0 = card;
-        } else game.hand1 = card;
-
-        game.turn = game.turn === 0 ? 1 : 0;
-
-        // now we just need to send out an "update req"
+      if (await isPlayerInGame(code, player.id)) {
+        return res.json({ status: "already-in-game" });
+      } else {
+        await addPlayer(code, player);
         sendUpdate(code);
 
-        // if we are tryna compare them
-        if (game.hand1 && game.hand0) {
-            
-            // work out who wins
-            if (doesUserWin(game.hand1, game.hand0)) game.cards1.push(game.hand0, game.hand1);
-            else game.cards0.push(game.hand0, game.hand1);
+        return res.json({
+          status: "joined-game",
+          turn: false,
+          game: await getGame(code),
+        });
+      }
+    }
 
-            // reset
-            game.hand0 = null;
-            game.hand1 = null;
-        }
-        
-        res.send({ game });
-    },
-    DELETE: async (req, res) => {
-        const code = req.query.code;
-        const user = JWT.parseRequest(req);
+    createGame(code, player);
+    return res.json({
+      status: "joined-new-game",
+      turn: true,
+      game: await getGame(code),
+    });
+  },
+  POST: async (req, res) => {
+    const code = req.query.code as string;
+    const user = JWT.parseRequest(req);
 
-        if (!user) throw new NotFound("user");
+    if (!user) throw new NotFound("user");
 
-        // Check if the user requesting is in the game
-        const game = getPlayersGame(user.id);
-        
-        // todo: update error code
-        if (!game || game.code !== code) throw new NotFound("game");
+    // Check if the user requesting is in the game
 
-        deleteGame(code);
+    const game = await getGame(code);
 
-        res.send({ deleted: true })
-    },
+    if (!game) throw new NotFound("game");
+
+    if (!(await isPlayerInGame(code, user.id)))
+      throw new DisplayedError(401, "Player not in game");
+
+    // since we know this player is actually in the game
+    // now we can remove 1 from the deck, update that in the game, and send out a pusher req
+
+    if (game.deck.length <= 0) {
+      res.send({ ended: true });
+      return;
+    }
+
+    // remove top 1 from deck
+    const card = game.deck.pop() as Card;
+
+    if (game.players[0].id === user.id) {
+      game.hand0 = card;
+    } else game.hand1 = card;
+
+    game.turn = game.turn === 0 ? 1 : 0;
+
+    // first update
+    redis.set(getKey(code), JSON.stringify(game));
+
+    // now we just need to send out an "update req"
+    sendUpdate(code);
+
+    // if we are tryna compare them
+    if (game.hand1 && game.hand0) {
+      // work out who wins
+      if (doesUserWin(game.hand1, game.hand0))
+        game.cards1.push(game.hand0, game.hand1);
+      else game.cards0.push(game.hand0, game.hand1);
+
+      // reset
+      game.hand0 = null;
+      game.hand1 = null;
+    }
+
+    // update again, lol
+    redis.set(getKey(code), JSON.stringify(game));
+
+    res.send({ game });
+  },
+  DELETE: async (req, res) => {
+    const code = req.query.code as string;
+    const user = JWT.parseRequest(req);
+
+    if (!user) throw new NotFound("user");
+
+    // Check if the user requesting is in the game
+    if (!(await isPlayerInGame(code, user.id)))
+      throw new DisplayedError(401, "Player not in game");
+
+    deleteGame(code);
+
+    res.send({ deleted: true });
+  },
 });
 
-export function doesUserWin(hand1: Card | null, hand0: Card | null) {
-    if (!hand1 || !hand0) return false;
-    
-    return (hand1.color === hand0.color && hand1.number > hand0.number)
-                || doesUserColorWin([hand1, hand0], 0);
+export async function isGame(code: string) {
+  return (await getGame(code)) !== null;
 }
 
-function doesUserColorWin(compare: Card[], user: 0 | 1) {
-    const other = user === 0 ? 1 : 0;
+export async function addPlayer(code: string, player: Player) {
+  const game = await getGame(code);
+  if (!game) return;
 
-    if (compare[user].color === "red" && compare[other].color === "black")
-        return true;
+  game.players.push(player);
 
-    if (compare[user].color === "yellow" && compare[other].color === "red")
-        return true;
-
-    if (compare[user].color === "black" && compare[other].color === "yellow")
-        return true;
-
-    return false;
-}
-
-export function isGame(code: string): boolean {
-    return games.filter(g => g.code === code).length > 0;
-}
-
-export function addPlayer(code: string, player: Player): void {
-    const game = games.find(g => g.code === code);
-    if (!game) return;
-
-    game.players.push(player);
+  await redis.set(getKey(code), JSON.stringify(game), "ex", 3600);
 }
 
 function generateShuffleCards() {
   const cards: Card[] = [];
-  
+
   // Generate cards
   for (let c of ["red", "black", "yellow"])
-      for (let n = 1; n <= 10; n++)
-        cards.push({ color: c as Card["color"], number: n as Card["number"] })
+    for (let n = 1; n <= 10; n++)
+      cards.push({ color: c as Card["color"], number: n as Card["number"] });
 
   // Shuffle cards
   for (let i = 0; i < cards.length; i++) {
@@ -178,34 +171,43 @@ function generateShuffleCards() {
   return cards;
 }
 
-export function createGame(code: string, initialPlayer: Player): void {
-    if (isGame(code)) return;
+export async function createGame(code: string, initialPlayer: Player) {
+  const found = await redis.get(getKey(code));
+  if (found) return;
 
-    console.log("Created: " + code);
-    
-    games.push({
-        code,
-        players: [initialPlayer],
-        deck: generateShuffleCards(),
-        cards0: [],
-        cards1: [],
-        hand0: null,
-        hand1: null,
-        turn: 0
-    });
+  console.log("Created: " + code);
+
+  await redis.set(
+    getKey(code),
+    JSON.stringify({
+      players: [initialPlayer],
+      deck: generateShuffleCards(),
+      cards0: [],
+      cards1: [],
+      hand0: null,
+      hand1: null,
+      turn: 0,
+    }),
+    "ex",
+    3600
+  );
 }
 
-export function deleteGame(code: string) {
-    games = games.filter(g => g.code !== code);
-    console.log("Deleted game: " + code);
-    pusher.trigger(code, "game-delete", {});
+export async function deleteGame(code: string) {
+  await redis.del(getKey(code));
+
+  console.log("Deleted game: " + code);
+  pusher.trigger(code, "game-delete", {});
 }
 
-export function getPlayersGame(player: string) {
-    return games.filter(g => g.players.filter(p => p.id === player).length > 0)[0];
+export async function isPlayerInGame(code: string, playerId: string) {
+  const optionalGame = await getGame(code);
+  if (!optionalGame) return false;
+  return optionalGame.players.filter((p) => p.id === playerId).length > 0;
 }
 
-export function getGame(code: string): Game | null {
-    if (!isGame(code)) return null;
-    return games.filter(g => g.code === code)[0];
+export async function getGame(code: string) {
+  const optionalGame = await redis.get(getKey(code));
+  if (!optionalGame) return null;
+  return JSON.parse(optionalGame) as Game;
 }
