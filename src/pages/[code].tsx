@@ -9,7 +9,7 @@ import { LogOut } from "iconic-react";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/dist/client/router";
 import Pusher from "pusher-js";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import styles from "./game.module.css";
 import generalStyles from "./styles.module.css";
@@ -42,6 +42,8 @@ export default function Game(props: GameProps) {
 
   const [game, setGame] = useState<Game | undefined>();
   const [me, setMe] = useState<0 | 1>(0);
+  const gameRef = useRef(game);
+  gameRef.current = game;
 
   // Once a player joins the game, create a socket stating who we are
   useEffect(() => {
@@ -87,13 +89,19 @@ export default function Game(props: GameProps) {
         setTimeout(() => {
           console.log("hi we here");
 
-          if (!game || game.hand0 === null || game.hand1 === null) return;
+          const g = gameRef.current;
 
-          const _game = { ...game };
+          console.log(g);
+          console.log(g?.hand0);
+          console.log(g?.hand1);
 
-          if (doesUserWin(game.hand1, game.hand0))
-            _game.cards1.push(game.hand1, game.hand0);
-          else _game.cards0.push(game.hand1, game.hand0);
+          if (!g || g.hand0 === null || g.hand1 === null) return;
+
+          const _game = { ...g };
+
+          if (doesUserWin(g.hand1, g.hand0))
+            _game.cards1.push(g.hand1, g.hand0);
+          else _game.cards0.push(g.hand1, g.hand0);
 
           console.log(_game);
 
@@ -101,7 +109,7 @@ export default function Game(props: GameProps) {
           _game.hand1 = null;
 
           setGame(_game);
-        }, 3 * 1000);
+        }, 0.5 * 1000);
       }
 
       setGame(data);
@@ -195,7 +203,7 @@ export default function Game(props: GameProps) {
                     <Arrow
                       style={{ marginTop: "4.5em" }}
                       flipped={
-                        me === 1
+                        me === 0
                           ? doesUserWin(game.hand1, game.hand0)
                           : doesUserWin(game.hand0, game.hand1)
                       }
