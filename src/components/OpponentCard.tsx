@@ -9,21 +9,19 @@ interface OpponentCardProps {
 }
 
 export function OpponentCard(props: OpponentCardProps) {
-  return props.hand === null ? (
-    <h1>hand is null</h1>
-  ) : (
+  return (
     <div
       className={styles.card}
       style={{
         filter: props.isTurn ? "drop-shadow(0px 0px 10px darkgrey)" : "",
         ...(props.isTurnedOver
-          ? { borderColor: getColor(props.hand.color) }
+          ? { borderColor: getColor(props.hand!.color) }
           : { borderColor: "var(--button-bg)" }),
       }}
     >
       {props.isTurnedOver ? (
-        <h1 style={{ color: getColor(props.hand.color) }}>
-          {getRoman(props.hand.number)}
+        <h1 style={{ color: getColor(props.hand!.color) }}>
+          {getRoman(props.hand!.number)}
         </h1>
       ) : (
         <h1 style={{ color: "var(--button-bg)" }}>?</h1>
