@@ -1,21 +1,25 @@
 :root {
-    --theme: #F7558B;
-    --bg: #0f0f0f;
-    --button-bg: #474747;
-    --input-bg: #CCCCCC;
+  --theme: #f7558b;
+  --bg: #0f0f0f;
+  --button-bg: #474747;
+  --input-bg: #cccccc;
+  --red: #ff4747;
+  --green: #aaff99;
 }
 
-h1, h2, h3 {
-    padding: 0;
-    margin: 0;
+h1,
+h2,
+h3 {
+  padding: 0;
+  margin: 0;
 }
 
 button {
-    background: none;
-    border: none;
-    color: white;
-    text-transform: lowercase;
-    cursor: pointer;
+  background: none;
+  border: none;
+  color: white;
+  text-transform: lowercase;
+  cursor: pointer;
 }
 
 html,
@@ -24,7 +28,7 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-    font-family: "Poppins";
+  font-family: "Poppins";
 }
 
 a {
