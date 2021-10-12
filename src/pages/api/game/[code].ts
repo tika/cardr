@@ -22,13 +22,19 @@ export async function sendUpdate(code: string) {
 
       await prisma.user.update({
         where: { id: game.players[0].id },
-        data: { timesPlayed: { increment: user0Won ? 1 : 0 }, timesWon: { increment: 1 } },
+        data: {
+          timesPlayed: { increment: 1 },
+          timesWon: { increment: user0Won ? 1 : 0 },
+        },
       });
 
       await prisma.user.update({
         where: { id: game.players[1].id },
-        data: { timesPlayed: { increment: user0Won ? 0 : 1 }, timesWon: { increment: 1 } },
-      })
+        data: {
+          timesPlayed: { increment: 1 },
+          timesWon: { increment: user0Won ? 0 : 1 },
+        },
+      });
     }
   }
 }
