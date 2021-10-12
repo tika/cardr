@@ -60,7 +60,7 @@ export default function Game(props: GameProps) {
         if (res.status.includes("joined") || res.status === "already-in-game") {
           setMe(res.turn ? 0 : 1);
 
-          if (!res.turn) {
+          if (!res.turn || res.status === "already-in-game") {
             // we know there is another player and therefore we can just set the game
             setGame(res.game);
           }
