@@ -13,7 +13,24 @@ function getKey(code: string) {
 
 export async function sendUpdate(code: string) {
   const game = await getGame(code);
-  if (game) await pusher.trigger(code, "game-update", game);
+  if (game) {
+    await pusher.trigger(code, "game-update", game);
+
+    if (game.deck.length === 0) {
+      // increasing players scores
+      const user0Won = game.cards0.length > game.cards1.length;
+
+      await prisma.user.update({
+        where: { id: game.players[0].id },
+        data: { timesPlayed: { increment: user0Won ? 1 : 0 }, timesWon: { increment: 1 } },
+      });
+
+      await prisma.user.update({
+        where: { id: game.players[1].id },
+        data: { timesPlayed: { increment: user0Won ? 0 : 1 }, timesWon: { increment: 1 } },
+      })
+    }
+  }
 }
 
 export const pusher = new Pusher({
