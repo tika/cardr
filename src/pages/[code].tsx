@@ -57,7 +57,7 @@ export default function Game(props: GameProps) {
 
         toast(res.status); // res.status === what the error/success code is
 
-        if (res.status.includes("joined")) {
+        if (res.status.includes("joined") || res.status === "already-in-game") {
           setMe(res.turn ? 0 : 1);
 
           if (!res.turn) {
@@ -166,12 +166,7 @@ export default function Game(props: GameProps) {
                   : game.players[1].name}{" "}
                 won!
               </h1>
-              <h2>
-                {game.cards0.length} cards :: {game.players[0].name}
-              </h2>
-              <h2>
-                {game.cards1.length} cards :: {game.players[1].name}
-              </h2>
+              <h2>you lost to {game.players[0].name}</h2>
             </div>
           ) : (
             <div className={styles.game}>

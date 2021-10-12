@@ -13,12 +13,7 @@ function getKey(code: string) {
 
 export async function sendUpdate(code: string) {
   const game = await getGame(code);
-
-  if (game) {
-    game.lastUpdated = new Date();
-
-    await pusher.trigger(code, "game-update", game);
-  }
+  if (game) await pusher.trigger(code, "game-update", game);
 }
 
 export const pusher = new Pusher({
@@ -44,12 +39,26 @@ export default createEndpoint({
 
     // if there is already a game with this code && player is not already in this game
     if (game) {
-      if (game.players.length >= 2) {
-        return res.json({ status: "full-game" });
-      }
-
       if (await isPlayerInGame(code, player.id)) {
-        return res.json({ status: "already-in-game" });
+        const game = await getGame(code);
+
+        if (!game)
+          return res.json({
+            status: "already-in-game",
+            game: null,
+            turn: false,
+          });
+
+        // we must work out what player is which
+        const playerNumber = game.players[0].id === player.id ? 0 : 1;
+
+        return res.json({
+          status: "already-in-game",
+          turn: game.turn === playerNumber,
+          game,
+        });
+      } else if (game.players.length >= 2) {
+        return res.json({ status: "full-game" });
       } else {
         await addPlayer(code, player);
         sendUpdate(code);
