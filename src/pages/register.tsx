@@ -5,7 +5,7 @@ import { JWT } from "@app/jwt";
 import { useState } from "react";
 import { registerSchema } from "@schemas/users";
 import toast from "react-hot-toast";
-import styles from "./styles.module.css";;
+import styles from "./styles.module.css";
 
 export default function Register() {
   const router = useRouter();
@@ -15,15 +15,16 @@ export default function Register() {
 
   function register() {
     const body = registerSchema.safeParse({ name: username, password });
-    
+
     if ("error" in body) {
       return toast.error(body.error.name);
     } else {
-      if (password !== confirmPassword) return toast.error("Passwords don't match");
+      if (password !== confirmPassword)
+        return toast.error("Passwords don't match");
       fetcher("PUT", "/users", { name: username, password }).then(() =>
         router.push("/")
       );
-    }    
+    }
   }
 
   return (
@@ -53,7 +54,9 @@ export default function Register() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
-        <button className={styles.login} style={{ width: "8em" }}>Register</button>
+        <button className={styles.login} style={{ width: "8em" }}>
+          Register
+        </button>
       </form>
     </div>
   );
