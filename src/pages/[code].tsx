@@ -85,15 +85,8 @@ export default function Game(props: GameProps) {
         data.hand0 !== null &&
         data.hand1 !== null
       ) {
-        console.log("3s starts now");
         setTimeout(() => {
-          console.log("hi we here");
-
           const g = gameRef.current;
-
-          console.log(g);
-          console.log(g?.hand0);
-          console.log(g?.hand1);
 
           if (!g || g.hand0 === null || g.hand1 === null) return;
 
@@ -159,8 +152,9 @@ export default function Game(props: GameProps) {
       ) : (
         <>
           {game.deck.length === 0 ? (
-            <div>
+            <div className={styles.ended}>
               <h1>
+                you
                 {game.cards0.length > game.cards1.length
                   ? game.players[0].name
                   : game.players[1].name}{" "}
@@ -180,7 +174,12 @@ export default function Game(props: GameProps) {
                 </span>
               </h1>
               <div className={styles.playground}>
-                <div className={styles.cards}>
+                <div
+                  className={styles.cards}
+                  style={{
+                    gap: isTransition() ? "calc((20em - 42px) / 2)" : "20em",
+                  }}
+                >
                   <div>
                     <ChooseCard
                       disabled={isTransition() || game.turn === me}
