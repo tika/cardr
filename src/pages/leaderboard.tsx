@@ -39,6 +39,7 @@ export default function Leaderboard() {
               className={generalStyles.iconButton}
               style={{
                 width: "10em",
+                marginTop: "1em",
               }}
               onClick={() => {
                 router.push("/");

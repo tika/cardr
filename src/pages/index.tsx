@@ -39,6 +39,12 @@ export default function Landing(props: LandingProps) {
           >
             create game
           </button>
+          <button
+            className={styles.register}
+            onClick={() => router.push("/leaderboard")}
+          >
+            leaderboard
+          </button>
           <div style={{ display: "flex", gap: "1em" }}>
             <input
               style={{ width: "calc(100% - 8em)" }}
