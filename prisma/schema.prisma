@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgres"
+  url      = "postgresql://postgres:nfBodv1YRcn6v2KtnNu9@containers-us-west-19.railway.app:6704/railway"
 }
 
 generator client {
@@ -16,13 +16,4 @@ model User {
   password    String
   timesWon    Int     @default(0)
   timesPlayed Int     @default(0)
-
-  // game    Game[] @relation("UserPlaysGame")
-  // cards   String
 }
-
-// model Game {
-//   code        String  @id @default(cuid()) // todo: have this shorter?
-//   users       User[]  @relation("UserPlaysGame", references: [id])
-//   cards       String // What cards have already been distributed, to which players?
-// }
