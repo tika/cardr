@@ -171,7 +171,7 @@ export default function Game(props: GameProps) {
             className={generalStyles.subheading}
             style={{ fontSize: "1.5em" }}
           >
-            tip: remember to press "take from deck"
+            tip: remember to press &#34;take from deck&#34;
           </h2>
           <button
             className={generalStyles.iconButton}
@@ -221,12 +221,11 @@ export default function Game(props: GameProps) {
           ) : (
             <div className={styles.game}>
               <h1 className={styles.title}>
-                game with{" "}
+                game with
                 <span>
-                  {
+                  {" " +
                     game.players.filter((p) => p.name !== props.user.name)[0]
-                      .name
-                  }
+                      .name}
                 </span>
               </h1>
               <div className={styles.playground}>
