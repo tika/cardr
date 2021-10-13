@@ -70,7 +70,7 @@ export default function Game(props: GameProps) {
   }, []);
 
   useEffect(() => {
-    const pusher = new Pusher(process.env.NEXT_APP_KEY, {
+    const pusher = new Pusher(process.env.NEXT_APP_KEY as string, {
       cluster: "eu",
     });
 
