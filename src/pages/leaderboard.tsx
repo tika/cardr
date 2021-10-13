@@ -22,7 +22,7 @@ export default function Leaderboard() {
           <h1 className={styles.heading}>leaderboard</h1>
           <div className={styles.leaderboard} style={{ marginTop: "1em" }}>
             {data.leaderboard.map((p, i) => (
-              <div className={styles.leaderboardModule}>
+              <div key={i} className={styles.leaderboardModule}>
                 <div className={styles.leaderboardPos}>
                   <h1>#{i + 1}</h1>
                 </div>
