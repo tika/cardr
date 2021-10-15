@@ -288,6 +288,15 @@ export default function Game(props: GameProps) {
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const user = JWT.parseRequest(ctx.req);
 
+  if (!user) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {
       user: user as Player,
