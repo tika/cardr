@@ -62,6 +62,9 @@ export default function Game(props: GameProps) {
 
           if (!res.turn || res.status === "already-in-game") {
             // we know there is another player and therefore we can just set the game
+
+            if (res.game.hand1 || res.game.hand0) setMe(res.turn ? 1 : 0);
+
             setGame(res.game);
           }
         }
@@ -78,8 +81,6 @@ export default function Game(props: GameProps) {
     const channel = pusher.subscribe(props.code);
 
     channel.bind("game-update", (data: Game) => {
-      console.log(data);
-
       if (
         data.deck.length !== 30 &&
         data.hand0 !== null &&
@@ -95,8 +96,6 @@ export default function Game(props: GameProps) {
           if (doesUserWin(g.hand1, g.hand0))
             _game.cards1.push(g.hand1, g.hand0);
           else _game.cards0.push(g.hand1, g.hand0);
-
-          console.log(_game);
 
           _game.hand0 = null;
           _game.hand1 = null;
@@ -133,8 +132,6 @@ export default function Game(props: GameProps) {
         ? game.players[1].name
         : game.players[0].name;
     const pointDifference = Math.abs(game.cards0.length - game.cards1.length);
-
-    console.log(me, game.cards0.length, game.cards1.length);
 
     if (me === 0 && game.cards0.length > game.cards1.length) {
       return (
