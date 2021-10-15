@@ -1,10 +1,11 @@
 import { createEndpoint } from "@app/endpoint";
 import { DisplayedError, NotFound } from "@app/expections";
 import { JWT } from "@app/jwt";
+import pusher from "@app/pusher";
 import redis from "@app/redis";
 import { Player } from "@app/santise";
 import { doesUserWin } from "@app/utils";
-import Pusher from "pusher";
+
 import { Card, Game } from "src/pages/[code]";
 
 function getKey(code: string) {
@@ -38,14 +39,6 @@ export async function sendUpdate(code: string) {
     }
   }
 }
-
-export const pusher = new Pusher({
-  appId: process.env.APP_ID as string,
-  key: process.env.KEY as string,
-  secret: process.env.SECRET as string,
-  cluster: process.env.CLUSTER as string,
-  useTLS: true,
-});
 
 export default createEndpoint({
   GET: async (req, res) => {
