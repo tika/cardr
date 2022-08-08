@@ -1,0 +1,91 @@
+.bg {
+    background-color: var(--bg);
+    height: 100vh;
+}
+
+.code {
+    color: var(--button-bg);
+    font-size: 1em;
+    position: absolute;
+    bottom: 1em;
+    left: 1em;
+}
+
+.title {
+    font-size: 2em;
+    color: white;
+}
+
+.title > span {
+    color: var(--theme);
+}
+
+.deckArea {
+    width: calc((5em + 10px) * 5);
+    flex-wrap: wrap;
+    display: flex;
+    row-gap: 10px;
+    column-gap: 10px;
+    max-height: calc((7em + 10px) * 3);
+    overflow-y: auto;
+}
+
+.game {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 3em;
+}
+
+.playground {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 8em;
+    gap: 4em;
+}
+
+.score {
+    display: flex;
+    flex-direction: row;
+    gap: 3em;
+}
+
+.score > h1 {
+    color: var(--theme);
+}
+
+.score > h2 {
+    color: white;
+    font-size: 2em;
+}
+
+.cards {
+    display: flex;
+    flex-direction: row;
+}
+
+.cards > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3em;
+}
+
+.cards > div > h1 {
+    color: white;
+    font-size: 1em;
+}
+
+.ended {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.ended > h1 > span {
+    color: var(--theme);
+}

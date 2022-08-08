@@ -1,0 +1,124 @@
+.bg {
+    background-color: var(--bg);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10em;
+}
+
+.heading {
+    /* text-transform: capitalize; */
+    color: white;
+    font-weight: 900;
+    font-size: 3em;
+}
+
+.subheading {
+    color: var(--theme);
+    font-weight: 500;
+    font-size: 1.5em;
+}
+
+.login {
+    font-size: 1em;
+    background-color: var(--theme);
+    padding: 0.75em 1.25em;
+    border-radius: 0.5em;
+    font-weight: 600;
+}
+
+.buttons {
+    display: flex;
+    gap: 1em;
+    margin-top: 2em;
+}
+
+.register {
+    font-size: 1em;
+    background-color: var(--button-bg);
+    padding: 0.75em 1.25em;
+    border-radius: 0.5em;
+    font-weight: 600;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    width: 25em;
+    margin-top: 2em;
+}
+
+.form > input {
+    background-color: var(--button-bg);
+    border: none;
+    font-size: 1em;
+    padding: 0.75em 1.25em;
+    color: white;
+    border-radius: 0.5em;
+}
+
+.input {
+    background-color: var(--input-bg);
+    border: none;
+    font-size: 1em;
+    padding: 0.75em 1.25em;
+    color: black;
+    border-radius: 0.5em;
+}
+
+.iconButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1em;
+    background-color: var(--button-bg);
+    padding: 0.75em 1.25em;
+    border-radius: 0.5em;
+    font-weight: 600;
+}
+
+.leaderboardModule {
+    background-color: #1a1a1a;
+    border-radius: 0.5em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1em;
+    width: 25em;
+    padding: 10px 1em;
+}
+
+.leaderboardInfo {
+    color: white;
+}
+
+.leaderboardInfo > h2 {
+    color: var(--theme);
+    font-size: 1em;
+}
+
+.leaderboardInfo > h1 {
+    font-size: 1.5em;
+    margin-bottom: -3px;
+}
+
+.leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.leaderboardPos {
+    color: black;
+    background-color: white;
+    border-radius: 100em;
+    padding: 5px;
+    font-size: 0.75em;
+    height: 3.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5em;
+}

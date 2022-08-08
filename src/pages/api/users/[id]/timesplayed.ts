@@ -1,21 +1,22 @@
 import { createEndpoint } from "@app/endpoint";
 import { NotFound } from "@app/expections";
+import { prisma } from "@app/prisma";
 
 export default createEndpoint({
-  PUT: async (req, res) => {
-    const user = await prisma.user.findFirst({
-      where: { id: req.query.id as string },
-    });
+    PUT: async (req, res) => {
+        const user = await prisma.user.findFirst({
+            where: { id: req.query.id as string },
+        });
 
-    if (!user) {
-      throw new NotFound("user");
-    }
+        if (!user) {
+            throw new NotFound("user");
+        }
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { timesPlayed: { increment: 1 } },
-    });
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { timesPlayed: { increment: 1 } },
+        });
 
-    res.send({ success: true });
-  },
+        res.send({ success: true });
+    },
 });
