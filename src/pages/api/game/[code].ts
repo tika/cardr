@@ -14,29 +14,30 @@ function getKey(code: string) {
 
 export async function sendUpdate(code: string) {
     const game = await getGame(code);
-    if (game) {
-        await pusher.trigger(code, "game-update", game);
 
-        if (game.deck.length === 0) {
-            // increasing players scores
-            const user0Won = game.cards0.length > game.cards1.length;
+    if (!game) return;
 
-            await prisma.user.update({
-                where: { id: game.players[0].id },
-                data: {
-                    timesPlayed: { increment: 1 },
-                    timesWon: { increment: user0Won ? 1 : 0 },
-                },
-            });
+    await pusher.trigger(code, "game-update", game);
 
-            await prisma.user.update({
-                where: { id: game.players[1].id },
-                data: {
-                    timesPlayed: { increment: 1 },
-                    timesWon: { increment: user0Won ? 0 : 1 },
-                },
-            });
-        }
+    if (game.deck.length === 0) {
+        // increasing players scores
+        const user0Won = game.cards0.length > game.cards1.length;
+
+        await prisma.user.update({
+            where: { id: game.players[0].id },
+            data: {
+                timesPlayed: { increment: 1 },
+                timesWon: { increment: user0Won ? 1 : 0 },
+            },
+        });
+
+        await prisma.user.update({
+            where: { id: game.players[1].id },
+            data: {
+                timesPlayed: { increment: 1 },
+                timesWon: { increment: user0Won ? 0 : 1 },
+            },
+        });
     }
 }
 
@@ -88,6 +89,7 @@ export default createEndpoint({
         }
 
         createGame(code, player);
+
         return res.json({
             status: "joined-new-game",
             turn: true,

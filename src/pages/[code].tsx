@@ -1,18 +1,18 @@
-import { fetcher } from "@app/fetcher";
 import { JWT } from "@app/jwt";
 import { Player } from "@app/santise";
 import { doesUserWin } from "@app/utils";
-import { Arrow } from "@components/Arrow";
-import { ChooseCard } from "@components/ChooseCard";
-import { OpponentCard } from "@components/OpponentCard";
-import { LogoutIcon } from "@heroicons/react/outline";
 import { GetServerSideProps } from "next";
 import { useRouter } from "next/dist/client/router";
 import Pusher from "pusher-js";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import styles from "@styles/game.module.css";
-import generalStyles from "@styles/styles.module.css";
+import gameStyles from "@styles/game.module.css";
+import axios from "axios";
+import { WaitPage } from "@components/WaitPage";
+import { EndGamePage } from "@components/EndGamePage";
+import { GamePage } from "@components/GamePage";
+import { santiseUser } from "../app/santise";
+import { prisma } from "@app/prisma";
 
 type GameProps = {
     user: Player;
@@ -45,42 +45,66 @@ export default function Game(props: GameProps) {
     const gameRef = useRef(game);
     gameRef.current = game;
 
-    // Once a player joins the game, create a socket stating who we are
-    useEffect(() => {
-        fetcher("PUT", `/game/${props.code}`, { player: props.user }).then(
-            (res: any) => {
-                if (res.status === "full-game") {
-                    toast.error("Game full");
-                    router.push("/");
-                    return;
-                }
+    const joinGame = useCallback(
+        async (abortController: AbortController) => {
+            // Join the game
+            let res;
 
-                toast(res.status); // res.status === what the error/success code is
+            // Removes CancelError
+            try {
+                res = await axios.put(
+                    `/api/game/${props.code}`,
+                    { player: props.user },
+                    { signal: abortController.signal }
+                );
+            } catch (error) {
+                return;
+            }
 
-                if (
-                    res.status.includes("joined") ||
-                    res.status === "already-in-game"
-                ) {
-                    setMe(res.turn ? 0 : 1);
+            if (!res) return;
 
-                    if (!res.turn || res.status === "already-in-game") {
-                        // we know there is another player and therefore we can just set the game
+            const { status, turn, game } = res.data;
 
-                        if (res.game.hand1 || res.game.hand0)
-                            setMe(res.turn ? 1 : 0);
+            if (status === "full-game") {
+                toast.error("Game full");
+                return router.push("/");
+            }
 
-                        setGame(res.game);
-                    }
+            toast(status); // res.status === what the error/success code is
+
+            // If we are already in a game
+            if (status.includes("joined") || status === "already-in-game") {
+                setMe(turn ? 0 : 1);
+
+                if (!turn || status === "already-in-game") {
+                    // we know there is another player and therefore we can just set the game
+
+                    if (game.hand1 || game.hand0) setMe(turn ? 1 : 0);
+
+                    setGame(game);
                 }
             }
-        );
-    }, [props.code, props.user, router]);
+        },
+        [props.code, props.user, router]
+    );
+
+    // Once a player joins the game, create a socket stating who we are
+    useEffect(() => {
+        const controller = new AbortController();
+
+        joinGame(controller);
+
+        return () => {
+            controller.abort();
+        };
+    }, [joinGame]);
 
     useEffect(() => {
+        // this is CLIENT SIDE PUSHER
         const pusher = new Pusher(
-            process.env.NEXT_PUBLIC_PUSHER_APP_KEY as string,
+            process.env.NEXT_PUBLIC_PUSHER_KEY as string,
             {
-                cluster: "eu",
+                cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
             }
         );
 
@@ -121,227 +145,21 @@ export default function Game(props: GameProps) {
         return () => pusher.unsubscribe(props.code);
     }, [props.code, router]);
 
-    // should we be comparing
-    function isTransition() {
-        if (!game) return false;
-        return game.hand0 !== null && game.hand1 !== null;
-    }
-
-    function getEndText() {
-        if (!game) return <h1></h1>;
-
-        const winner =
-            game.cards0.length > game.cards1.length
-                ? game.players[0].name
-                : game.players[1].name;
-        const loser =
-            game.players[0].name === winner
-                ? game.players[1].name
-                : game.players[0].name;
-        const pointDifference = Math.abs(
-            game.cards0.length - game.cards1.length
-        );
-
-        if (me === 0 && game.cards0.length > game.cards1.length) {
-            return (
-                <h1>
-                    you <span style={{ color: "var(--green)" }}>won</span> by{" "}
-                    {pointDifference} points against <span>{loser}</span>
-                </h1>
-            );
-        } else if (me === 1 && game.cards1.length > game.cards0.length) {
-            return (
-                <h1>
-                    you <span style={{ color: "var(--green)" }}>won</span> by{" "}
-                    {pointDifference} points against <span>{loser}</span>
-                </h1>
-            );
-        } else {
-            return (
-                <h1>
-                    you <span style={{ color: "var(--red)" }}>lost</span> by{" "}
-                    {pointDifference} points to <span>{winner}</span>
-                </h1>
-            );
-        }
-    }
-
     return (
-        <div className={styles.bg}>
-            {!game ? (
-                <div className={generalStyles.bg}>
-                    <h1
-                        className={generalStyles.heading}
-                        style={{ fontSize: "3em" }}
-                    >
-                        waiting for a teammate...
-                    </h1>
-                    <h2
-                        className={generalStyles.subheading}
-                        style={{ fontSize: "1.5em" }}
-                    >
-                        tip: remember to press &#34;take from deck&#34;
-                    </h2>
-                    <button
-                        className={generalStyles.iconButton}
-                        style={{ width: "10em", marginTop: "1em" }}
-                        onClick={() => {
-                            router.push("/");
-                            fetcher("DELETE", `/game/${props.code}`).catch(
-                                (err) => toast.error(err)
-                            );
-                        }}
-                    >
-                        <LogoutIcon width={25} height={25} color="white" />
-                        exit
-                    </button>
-                    <h2 className={styles.code}>code: {props.code}</h2>
-                </div>
+        <div className={gameStyles.bg}>
+            {!game || game.players.length === 1 ? (
+                <WaitPage router={router} code={props.code} />
             ) : (
                 <>
                     {game.deck.length === 0 ? (
-                        <div className={styles.ended}>
-                            {getEndText()}
-                            <div className={styles.score}>
-                                <h1 style={{ fontSize: "1.5em" }}>
-                                    {me === 0
-                                        ? game.cards0.length
-                                        : game.cards1.length}
-                                </h1>
-                                <h2 style={{ fontSize: "1.5em" }}>:</h2>
-                                <h1 style={{ fontSize: "1.5em" }}>
-                                    {me === 1
-                                        ? game.cards0.length
-                                        : game.cards1.length}
-                                </h1>
-                            </div>
-
-                            <button
-                                className={generalStyles.iconButton}
-                                style={{
-                                    width: "10em",
-                                    position: "absolute",
-                                    bottom: "4em",
-                                }}
-                                onClick={() => {
-                                    router.push("/");
-                                }}
-                            >
-                                <LogoutIcon
-                                    width={25}
-                                    height={25}
-                                    color="white"
-                                />
-                                go home
-                            </button>
-                        </div>
+                        <EndGamePage router={router} me={me} game={game} />
                     ) : (
-                        <div className={styles.game}>
-                            <h1 className={styles.title}>
-                                game with
-                                <span>
-                                    {" " +
-                                        game.players.filter(
-                                            (p) => p.name !== props.user.name
-                                        )[0].name}
-                                </span>
-                            </h1>
-                            <div className={styles.playground}>
-                                <div
-                                    className={styles.cards}
-                                    style={{
-                                        gap: isTransition()
-                                            ? "calc((20em - 42px) / 2)"
-                                            : "20em",
-                                    }}
-                                >
-                                    <div>
-                                        <ChooseCard
-                                            disabled={
-                                                isTransition() ||
-                                                game.turn === me
-                                            }
-                                            isTurnedOver={
-                                                me === 0
-                                                    ? game.hand0 !== null
-                                                    : game.hand1 !== null
-                                            }
-                                            onTake={() =>
-                                                fetcher(
-                                                    "POST",
-                                                    `/game/${props.code}`
-                                                )
-                                            }
-                                            topCard={
-                                                me === 0
-                                                    ? game.hand0
-                                                    : game.hand1
-                                            }
-                                        />
-                                        <h1>
-                                            {me === 0
-                                                ? game.players[0].name
-                                                : game.players[1].name}
-                                        </h1>
-                                    </div>
-                                    {isTransition() && (
-                                        <Arrow
-                                            style={{ marginTop: "4.5em" }}
-                                            flipped={
-                                                me === 0
-                                                    ? doesUserWin(
-                                                          game.hand1,
-                                                          game.hand0
-                                                      )
-                                                    : doesUserWin(
-                                                          game.hand0,
-                                                          game.hand1
-                                                      )
-                                            }
-                                            scaleFactor={1}
-                                        />
-                                    )}
-                                    <div>
-                                        <OpponentCard
-                                            isTurn={
-                                                !isTransition() &&
-                                                game.turn === me
-                                            }
-                                            isTurnedOver={
-                                                me === 0
-                                                    ? game.hand1 !== null
-                                                    : game.hand0 !== null
-                                            }
-                                            hand={
-                                                me === 0
-                                                    ? game.hand1
-                                                    : game.hand0
-                                            }
-                                        />
-                                        <h1>
-                                            {me === 0
-                                                ? game.players[1].name
-                                                : game.players[0].name}
-                                        </h1>
-                                    </div>
-                                </div>
-
-                                <div className={styles.score}>
-                                    <h1>
-                                        {me === 0
-                                            ? game.cards0.length
-                                            : game.cards1.length}
-                                    </h1>
-                                    <h2>:</h2>
-                                    <h1>
-                                        {me === 1
-                                            ? game.cards0.length
-                                            : game.cards1.length}
-                                    </h1>
-                                </div>
-                            </div>
-                            <h2 className={styles.code}>code: {props.code}</h2>
-                        </div>
+                        <GamePage
+                            code={props.code}
+                            game={game}
+                            me={me}
+                            user={props.user}
+                        />
                     )}
                 </>
             )}
@@ -361,9 +179,24 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         };
     }
 
+    const fullUser = await prisma.user.findFirst({
+        where: {
+            id: user.id,
+        },
+    });
+
+    if (!fullUser) {
+        return {
+            redirect: {
+                destination: "/login",
+                permanent: false,
+            },
+        };
+    }
+
     return {
         props: {
-            user: user as Player,
+            user: santiseUser(fullUser),
             code: ctx.query.code,
             token: ctx.req.cookies.token,
         },
