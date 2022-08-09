@@ -6,6 +6,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { loginSchema } from "@schemas/users";
 import styles from "@styles/styles.module.css";
+import { Title } from "@components/Title";
 
 export default function Login() {
     const router = useRouter();
@@ -30,6 +31,7 @@ export default function Login() {
 
     return (
         <div className={styles.bg}>
+            <Title text="login" />
             <h1 className={styles.heading}>Login</h1>
             <form
                 className={styles.form}

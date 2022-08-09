@@ -13,6 +13,7 @@ import { EndGamePage } from "@components/EndGamePage";
 import { GamePage } from "@components/GamePage";
 import { santiseUser } from "../app/santise";
 import { prisma } from "@app/prisma";
+import { Title } from "@components/Title";
 
 type GameProps = {
     user: Player;
@@ -148,18 +149,33 @@ export default function Game(props: GameProps) {
     return (
         <div className={gameStyles.bg}>
             {!game || game.players.length === 1 ? (
-                <WaitPage router={router} code={props.code} />
+                <>
+                    <Title text={"waiting..."} />
+                    <WaitPage router={router} code={props.code} />
+                </>
             ) : (
                 <>
                     {game.deck.length === 0 ? (
-                        <EndGamePage router={router} me={me} game={game} />
+                        <>
+                            <Title
+                                text={
+                                    (game.cards0.length > game.cards1.length
+                                        ? game.players[0].name
+                                        : game.players[1].name) + " won"
+                                }
+                            />
+                            <EndGamePage router={router} me={me} game={game} />
+                        </>
                     ) : (
-                        <GamePage
-                            code={props.code}
-                            game={game}
-                            me={me}
-                            user={props.user}
-                        />
+                        <>
+                            <Title text="in game" />
+                            <GamePage
+                                code={props.code}
+                                game={game}
+                                me={me}
+                                user={props.user}
+                            />
+                        </>
                     )}
                 </>
             )}

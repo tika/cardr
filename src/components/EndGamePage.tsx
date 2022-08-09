@@ -26,28 +26,21 @@ export function EndGamePage({ game, me, router }: Props) {
             game.cards0.length - game.cards1.length
         );
 
-        if (me === 0 && game.cards0.length > game.cards1.length) {
-            return (
-                <h1>
-                    you <span style={{ color: "var(--green)" }}>won</span> by{" "}
-                    {pointDifference} points against <span>{loser}</span>
-                </h1>
-            );
-        } else if (me === 1 && game.cards1.length > game.cards0.length) {
-            return (
-                <h1>
-                    you <span style={{ color: "var(--green)" }}>won</span> by{" "}
-                    {pointDifference} points against <span>{loser}</span>
-                </h1>
-            );
-        } else {
-            return (
-                <h1>
-                    you <span style={{ color: "var(--red)" }}>lost</span> by{" "}
-                    {pointDifference} points to <span>{winner}</span>
-                </h1>
-            );
-        }
+        const won =
+            (me === 0 && game.cards0.length > game.cards1.length) ||
+            (me === 1 && game.cards1.length > game.cards0.length);
+
+        return won ? (
+            <h1>
+                you <span style={{ color: "var(--green)" }}>won</span> by{" "}
+                {pointDifference} points against <span>{loser}</span>
+            </h1>
+        ) : (
+            <h1>
+                you <span style={{ color: "var(--red)" }}>lost</span> by{" "}
+                {pointDifference} points to <span>{winner}</span>
+            </h1>
+        );
     }
 
     return (

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { registerSchema } from "@schemas/users";
 import toast from "react-hot-toast";
 import styles from "@styles/styles.module.css";
+import { Title } from "@components/Title";
 
 export default function Register() {
     const router = useRouter();
@@ -29,6 +30,7 @@ export default function Register() {
 
     return (
         <div className={styles.bg}>
+            <Title text="register" />
             <h1 className={styles.heading}>Register</h1>
             <form
                 className={styles.form}

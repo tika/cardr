@@ -1,34 +1,43 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+![Game Preview](https://i.imgur.com/3tecb3p.png)
 
-## Getting Started
+# Cardr
 
-First, run the development server:
+## A small, simple and boring card game
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+This was made for the GCSE J276 June 2019 & June 2020 series, Project Task #3.
+(Not as official coursework)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+1. Create an account at /register (auto login)
+   1b. Sign in to an account at /login
+2. Create a new game at /
+   2b. Join a game using a code at /
+3. Play a game at /[game code]
+4. View leaderboard at /leaderboard
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Technologies used
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+-   heroicons
+-   axios
+-   bcrypt
+-   cookie
+-   csstype
+-   dayjs
+-   ioredis
+-   jsonwebtoken
+-   nanoid
+-   next
+-   prisma
+-   pusher (& pusherjs)
+-   react (& react-dom)
+-   react-host-toast
+-   swr
+-   zod
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
+I've chosen to use [Vercel](https://vercel.com/) to deploy the frontend & backend API of this application. I'm using [Heroku](https://heroku.com/) to host the Postgres database & Redis data storage. Furthermore, I'm using [Pusher](https://pusher.com/) for live interactions (websockets).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+[View design file on Framer](https://framer.com/projects/cardr--7cndy6a3yBF6jQx9uHbv-EzM3B)<br />
+That's all, folks.

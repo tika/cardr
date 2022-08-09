@@ -5,6 +5,7 @@ import { useRouter } from "next/dist/client/router";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import styles from "@styles/styles.module.css";
+import { Title } from "@components/Title";
 
 type LandingProps = {
     user: JWTPayload | null;
@@ -17,6 +18,7 @@ export default function Landing(props: LandingProps) {
 
     return (
         <div className={styles.bg}>
+            <Title text="cardr" />
             <h1 className={styles.heading}>cardr</h1>
             <h2 className={styles.subheading}>the least interactive game</h2>
             {props.user ? (

@@ -4,6 +4,8 @@ import styles from "@styles/styles.module.css";
 import { Player } from "@app/santise";
 import useSWR from "swr";
 import { LogoutIcon } from "@heroicons/react/outline";
+import Head from "next/head";
+import { Title } from "@components/Title";
 
 export default function Leaderboard() {
     const router = useRouter();
@@ -12,8 +14,11 @@ export default function Leaderboard() {
         (url) => fetcher("GET", url)
     );
 
+    if (error) return null;
+
     return (
         <div className={styles.bg}>
+            <Title text="leaderboard" />
             {!data ? (
                 <h1>loading...</h1>
             ) : (
